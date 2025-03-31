@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+import 'package:sportzy/core/theme/app_colors.dart';
+import 'package:sportzy/core/utils/screen_size.dart';
+
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final VoidCallback? onBack;
+
+  const CustomAppBar({required this.title, this.onBack, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.primary,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppColors.background,
+          size: ScreenSize.screenWidth(context) * 0.06, // Responsive icon size
+        ),
+        onPressed: onBack ?? () => Navigator.pop(context),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: AppColors.background,
+          fontSize:
+              ScreenSize.screenWidth(context) * 0.045, // Responsive font size
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize {
+    double screenHeight =
+        WidgetsBinding
+            .instance
+            .platformDispatcher
+            .views
+            .first
+            .physicalSize
+            .height /
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+
+    return Size.fromHeight(screenHeight * 0.08); // 8% of screen height
+  }
+}
