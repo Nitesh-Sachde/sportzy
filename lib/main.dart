@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportzy/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:sportzy/core/theme/app_theme.dart';
 import 'firebase_options.dart';
@@ -22,7 +23,7 @@ class SportzyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Sportzy",
-      theme: AppTheme.lightTheme,
+      theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
       home: const SignUpPage(), // Start with SignUpPage
     );
   }
