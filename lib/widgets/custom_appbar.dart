@@ -4,9 +4,15 @@ import 'package:sportzy/core/utils/screen_size.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final bool isBackButtonVisible;
   final VoidCallback? onBack;
 
-  const CustomAppBar({required this.title, this.onBack, super.key});
+  const CustomAppBar({
+    required this.title,
+    required this.isBackButtonVisible,
+    this.onBack,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,14 +20,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.primary,
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios_new_rounded,
-          color: AppColors.background,
-          size: ScreenSize.screenWidth(context) * 0.06, // Responsive icon size
-        ),
-        onPressed: onBack ?? () => Navigator.pop(context),
-      ),
+      leading:
+          isBackButtonVisible
+              ? IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.background,
+                  size:
+                      ScreenSize.screenWidth(context) *
+                      0.06, // Responsive icon size
+                ),
+                onPressed: onBack ?? () => Navigator.pop(context),
+              )
+              : null,
       title: Text(
         title,
         style: TextStyle(

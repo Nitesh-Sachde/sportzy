@@ -7,6 +7,7 @@ class CustomTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final TextInputAction? textInputAction;
   final bool isPassword;
   final bool isEnabled;
   final String? Function(String?)? validator;
@@ -18,6 +19,7 @@ class CustomTextField extends StatefulWidget {
     required this.hintText,
     required this.controller,
     this.keyboardType = TextInputType.text,
+    this.textInputAction,
     this.isPassword = false,
     this.isEnabled = true,
     this.validator,
@@ -48,6 +50,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         TextFormField(
           controller: widget.controller,
           keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
           obscureText: widget.isPassword ? _obscureText : false,
           enabled: widget.isEnabled,
           validator: widget.validator,
@@ -91,7 +94,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             contentPadding: EdgeInsets.symmetric(
               vertical: screenHeight * 0.01,
-              horizontal: screenWidth * 0.1,
+              horizontal: screenWidth * 0.05,
             ),
           ),
         ),
