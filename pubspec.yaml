@@ -42,6 +42,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_riverpod: ^2.6.1
   google_fonts: ^6.2.1
+  loading_animation_widget: ^1.3.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
     - assets/icon/Sportzy_Logo.png
     - assets/splash/splash_logo.png
     - assets/images/sportzy_logo.png
+    - assets/images/email_sent.avif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -14,16 +14,16 @@ void main() async {
   runApp(const ProviderScope(child: SportzyApp()));
 }
 
-class SportzyApp extends StatelessWidget {
+class SportzyApp extends ConsumerWidget {
   const SportzyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Sportzy",
       theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
-      home: const SignUpPage(), // Start with SignUpPage
+      home: const SignUpPage(), // Change to auth check later
     );
   }
 }
