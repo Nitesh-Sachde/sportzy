@@ -1,30 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/validators.dart';
+import 'package:sportzy/features/auth/controller/auth_controller.dart';
+import 'package:sportzy/features/auth/controller/auth_provider.dart';
 import 'package:sportzy/features/auth/pages/forgot_password_page.dart';
 import 'package:sportzy/features/auth/pages/sign_up_page.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 
-class SignInPage extends StatefulWidget {
+class SignInPage extends ConsumerStatefulWidget {
   const SignInPage({super.key});
 
   @override
   _SignInPageState createState() => _SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> {
+class _SignInPageState extends ConsumerState<SignInPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>(); // ✅ Add form key
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void _submit() {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
     if (_formKey.currentState!.validate()) {
-      // ✅ If form is valid, proceed with sign-in
-      print("Signing in with: ${emailController.text}");
-      // TODO: Implement Sign-In logic
+      ref.read(justSignedInProvider.notifier).state = true;
+      signIn(context: context, email: email, password: password);
     }
   }
 

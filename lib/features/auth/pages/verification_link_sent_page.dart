@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/auth/pages/home_page.dart';
+import 'package:sportzy/features/home/pages/home_page.dart';
+import 'package:sportzy/router/routes.dart';
 
 class VerificationLinkSentPage extends StatefulWidget {
   const VerificationLinkSentPage({super.key});
@@ -108,7 +109,8 @@ class _VerificationLinkSentPageState extends State<VerificationLinkSentPage> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed:
+              () => Navigator.pushReplacementNamed(context, Routes.signIn),
         ),
       ),
       body: Center(

@@ -57,13 +57,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
           decoration: InputDecoration(
             hintText: widget.hintText,
             hintStyle: TextStyle(
-              color: AppColors.textFieldBorder,
+              color: AppColors.grey,
               fontSize: screenWidth * 0.04,
             ),
             suffixIconColor: AppColors.textSecondary,
             prefixIcon:
                 widget.prefixIcon != null
-                    ? Icon(widget.prefixIcon, color: AppColors.textFieldBorder)
+                    ? Icon(widget.prefixIcon, color: AppColors.grey)
                     : null,
             suffixIcon:
                 widget.isPassword
@@ -81,7 +81,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(25),
               borderSide: BorderSide(
-                color: AppColors.textFieldBorder,
+                color: AppColors.grey,
                 width: screenWidth * 0.002,
               ),
             ),

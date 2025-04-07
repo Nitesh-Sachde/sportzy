@@ -1,0 +1,73 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:sportzy/core/theme/app_colors.dart';
+import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:sportzy/features/home/pages/home.dart';
+
+class HomePage extends ConsumerStatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  int _selectedIndex = 1;
+
+  final List<Widget> _screens = [
+    const Placeholder(), // Replace with your Matches/History screen
+    const Home(), // Home screen content
+    const Placeholder(), // Settings/Profile screen
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // final user = ref.watch(currentUserProvider); // Example usage
+    double screenWidth = ScreenSize.screenWidth(context);
+    // double screenHeight = ScreenSize.screenHeight(context);
+    return Scaffold(
+      body: _screens[_selectedIndex],
+
+      // 🔻 Bottom Nav Bar
+      bottomNavigationBar: Container(
+        color: AppColors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        child: GNav(
+          backgroundColor: AppColors.white,
+          color: AppColors.primary,
+          activeColor: AppColors.white,
+          tabBackgroundColor: AppColors.primary,
+          gap: 8,
+          selectedIndex: _selectedIndex,
+          onTabChange: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          padding: EdgeInsets.all(screenWidth * 0.023),
+          tabs: [
+            GButton(
+              icon: Icons.list_rounded,
+              text: 'Matches',
+              textSize: screenWidth * 0.07,
+              iconSize: screenWidth * 0.09,
+            ),
+            GButton(
+              icon: Icons.home,
+              text: 'Home',
+              textSize: screenWidth * 0.07,
+              iconSize: screenWidth * 0.09,
+            ),
+            GButton(
+              icon: Icons.settings,
+              text: 'Profile',
+              textSize: screenWidth * 0.07,
+              iconSize: screenWidth * 0.09,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

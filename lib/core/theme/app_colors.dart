@@ -10,7 +10,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF343434);
   static const Color buttonText = Color(0xFFffffff);
   static const Color placeholderText = Color(0xFFCACACA);
-  static const Color textFieldBorder = Color(0xFFCBCBCB);
+  static const Color grey = Color(0xFFCBCBCB);
   static const Color lightBlue = Color(0xFF0890FE);
   static const Color black = Color(0xFF000000);
 

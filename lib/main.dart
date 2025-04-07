@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sportzy/features/home/pages/home_page.dart';
+import 'package:sportzy/features/auth/pages/sign_in_page.dart';
 import 'package:sportzy/features/auth/pages/sign_up_page.dart';
+import 'package:sportzy/router/auth_wrapper.dart';
+import 'package:sportzy/router/routes.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -23,7 +27,12 @@ class SportzyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: "Sportzy",
       theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
-      home: const SignUpPage(), // Change to auth check later
+      home: AuthWrapper(),
+      routes: {
+        Routes.home: (context) => const HomePage(),
+        Routes.signIn: (context) => const SignInPage(),
+        Routes.signUp: (context) => const SignUpPage(),
+      },
     );
   }
 }
