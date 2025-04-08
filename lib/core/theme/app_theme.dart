@@ -18,7 +18,7 @@ class AppTheme {
       bodyLarge: TextStyle(color: AppColors.textPrimary),
       bodyMedium: TextStyle(color: AppColors.textSecondary),
     ),
-    cardColor: AppColors.cardBackground,
+    cardColor: AppColors.badmintoncardBackground,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.button,

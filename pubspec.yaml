@@ -74,6 +74,7 @@ flutter:
     - assets/splash/splash_logo.png
     - assets/images/sportzy_logo.png
     - assets/images/email_sent.avif
+    - assets/images/avatar.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

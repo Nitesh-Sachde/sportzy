@@ -25,15 +25,19 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     // final user = ref.watch(currentUserProvider); // Example usage
     double screenWidth = ScreenSize.screenWidth(context);
-    // double screenHeight = ScreenSize.screenHeight(context);
+    double screenHeight = ScreenSize.screenHeight(context);
     return Scaffold(
       body: _screens[_selectedIndex],
 
       // 🔻 Bottom Nav Bar
       bottomNavigationBar: Container(
         color: AppColors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.08,
+          vertical: screenHeight * 0.01,
+        ),
         child: GNav(
+          haptic: true,
           backgroundColor: AppColors.white,
           color: AppColors.primary,
           activeColor: AppColors.white,
