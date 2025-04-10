@@ -4,6 +4,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/home/pages/home.dart';
+import 'package:sportzy/features/my_matches/pages/my_matches_screen.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 1;
 
   final List<Widget> _screens = [
-    const Placeholder(), // Replace with your Matches/History screen
+    const MyMatchesScreen(), // Replace with your Matches/History screen
     const Home(), // Home screen content
     const Placeholder(), // Settings/Profile screen
   ];

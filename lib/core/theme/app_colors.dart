@@ -22,6 +22,9 @@ class AppColors {
   static const Color transparent = Colors.transparent;
   static const Color amber = Color(0xFFFFAF2A);
   static const Color ttTeamWonBG = Color(0xFF1E1671);
+  static const Color tabSelected = Color(0xFF3629B7);
+  static const Color tabUnselected = Color(0xFFF1F1F1);
+  static const Color myMatchCardBar = Color(0xFFD4ECFF);
 
   // static const Color cardBackground = Color(0xFFFFFFFF);
   // static const Color textPrimary = Color(0xFF212121);
