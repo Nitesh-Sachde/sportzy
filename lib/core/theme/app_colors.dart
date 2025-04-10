@@ -5,7 +5,7 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color background = Color(0xFFffffff);
   static const Color badmintoncardBackground = Color(0xFF1E1671);
-  static const Color ttcardBackground = Color(0xFF0890FE);
+  static const Color ttcardBackground = Color(0xFF42A7F9);
   static const Color button = Color(0xFF3629b7);
   static const Color textPrimary = Color(0xFF3629b7);
   static const Color textSecondary = Color(0xFF343434);
@@ -21,6 +21,7 @@ class AppColors {
   static const Color ttTeamNametext = Color(0xFFffffff);
   static const Color transparent = Colors.transparent;
   static const Color amber = Color(0xFFFFAF2A);
+  static const Color ttTeamWonBG = Color(0xFF1E1671);
 
   // static const Color cardBackground = Color(0xFFFFFFFF);
   // static const Color textPrimary = Color(0xFF212121);

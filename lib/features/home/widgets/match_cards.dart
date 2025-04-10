@@ -12,7 +12,7 @@ class LiveMatchCard extends ConsumerStatefulWidget {
 
 class _LiveMatchCardState extends ConsumerState<LiveMatchCard> {
   final bool isDoubles = true;
-  final String sport = 'Badminton'; // Change to 'Table Tennis' to test
+  final String sport = 'Table Tennis'; // Change to 'Table Tennis' to test
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +189,10 @@ class _LiveMatchCardState extends ConsumerState<LiveMatchCard> {
                       children: [
                         Text(
                           "View Match",
-                          style: TextStyle(color: AppColors.red),
+                          style: TextStyle(
+                            color: AppColors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         SizedBox(width: screenWidth * 0.01),
                         Icon(
@@ -231,7 +234,7 @@ class _LiveMatchCardState extends ConsumerState<LiveMatchCard> {
                         Text(
                           "TT12345",
                           style: TextStyle(
-                            color: AppColors.amber,
+                            color: AppColors.red,
                             fontWeight: FontWeight.w600,
                             fontSize: screenWidth * 0.045,
                           ),
@@ -364,13 +367,14 @@ class _LiveMatchCardState extends ConsumerState<LiveMatchCard> {
                         Text(
                           "View Match",
                           style: TextStyle(
-                            color: AppColors.ttTeamBarBackground,
+                            color: AppColors.red,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(width: screenWidth * 0.01),
                         Icon(
                           Icons.arrow_circle_right_rounded,
-                          color: AppColors.ttTeamBarBackground,
+                          color: AppColors.red,
                         ),
                       ],
                     ),
@@ -390,7 +394,7 @@ class PastMatchCard extends ConsumerStatefulWidget {
 
 class _PastMatchCardState extends ConsumerState<PastMatchCard> {
   final bool isDoubles = true;
-  final String sport = 'Table Tennis';
+  final String sport = 'Badminton';
 
   @override
   Widget build(BuildContext context) {
@@ -402,60 +406,225 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
             : AppColors.ttcardBackground;
 
     return GestureDetector(
-      onTap: () => print("Past match card clicked"),
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-        width: screenWidth * 0.9,
-        height: screenHeight * 0.32,
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
-        ),
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "$sport ${isDoubles ? "Doubles" : "Singles"}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.008),
-            const Text("TT12345", style: TextStyle(color: Colors.white)),
-            SizedBox(height: screenHeight * 0.008),
-            const Text("DAU Campus", style: TextStyle(color: Colors.white70)),
-            SizedBox(height: screenHeight * 0.008),
-            const Text(
-              "March 25, 2025 11:00 AM",
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Icon(
-                  Icons.emoji_events,
-                  size: screenHeight * 0.045,
-                  color: Colors.yellow,
+      onTap: () => print("Live match card clicked"),
+      child:
+          sport == 'Badminton'
+              ? Container(
+                margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.32,
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black26, blurRadius: 4),
+                  ],
                 ),
-                SizedBox(width: screenWidth * 0.02),
-                Expanded(
-                  child: Text(
-                    "Team MscIT Won",
-                    style: TextStyle(
-                      color: Colors.greenAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenHeight * 0.018,
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "$sport ${isDoubles ? "Doubles" : "Singles"}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+
+                        Text(
+                          "BM12345",
+                          style: TextStyle(
+                            color: AppColors.red,
+                            fontWeight: FontWeight.w600,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: AppColors.white,
+                        ),
+                        Text(
+                          "DAU Campus",
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: screenWidth * 0.04,
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.06),
+
+                        Text(
+                          "March 27, 2025 10:00 AM",
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/badminton_trophy.webp",
+                          alignment: Alignment.center,
+
+                          scale: 3.4,
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenWidth * 0.01,
+                          ),
+                          height: screenHeight * 0.12,
+                          width: screenWidth * 0.45,
+                          decoration: BoxDecoration(
+                            color: AppColors.bTeamBarBackground,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.01),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "View Match",
+                          style: TextStyle(
+                            color: AppColors.amber,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.01),
+                        Icon(
+                          Icons.arrow_circle_right_rounded,
+                          color: AppColors.amber,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
+              )
+              : Container(
+                margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.32,
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black26, blurRadius: 4),
+                  ],
+                ),
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "$sport ${isDoubles ? "Doubles" : "Singles"}",
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+
+                        Text(
+                          "TT12345",
+                          style: TextStyle(
+                            color: AppColors.amber,
+                            fontWeight: FontWeight.w600,
+                            fontSize: screenWidth * 0.045,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: AppColors.black,
+                        ),
+                        Text(
+                          "DAU Campus",
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontSize: screenWidth * 0.04,
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.06),
+
+                        Text(
+                          "March 27, 2025 10:00 AM",
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/images/table_tennis_trophy.webp",
+                          alignment: Alignment.center,
+
+                          scale: 3.4,
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenWidth * 0.01,
+                          ),
+                          height: screenHeight * 0.12,
+                          width: screenWidth * 0.45,
+                          decoration: BoxDecoration(
+                            color: AppColors.ttTeamWonBG,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.01),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "View Match",
+                          style: TextStyle(
+                            color: AppColors.amber,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.01),
+                        Icon(
+                          Icons.arrow_circle_right_rounded,
+                          color: AppColors.amber,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
     );
   }
 }
