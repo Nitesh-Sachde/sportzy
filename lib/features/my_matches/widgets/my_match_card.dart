@@ -30,9 +30,9 @@ class MatchCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
-              offset: Offset(4, 4),
-              blurRadius: 8,
+              color: AppColors.black,
+              offset: Offset(1, 1),
+              blurRadius: 3,
             ),
           ],
         ),

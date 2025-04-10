@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sportzy/features/create_match/screens/create_match_screen.dart';
 import 'package:sportzy/features/home/pages/home_page.dart';
 import 'package:sportzy/features/auth/pages/sign_in_page.dart';
 import 'package:sportzy/features/auth/pages/sign_up_page.dart';
@@ -32,6 +33,7 @@ class SportzyApp extends ConsumerWidget {
         Routes.home: (context) => const HomePage(),
         Routes.signIn: (context) => const SignInPage(),
         Routes.signUp: (context) => const SignUpPage(),
+        Routes.createMatch: (context) => const CreateMatchScreen(),
       },
     );
   }

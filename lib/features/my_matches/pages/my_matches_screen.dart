@@ -5,6 +5,7 @@ import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/my_matches/provider/match_filter_provider.dart';
 import 'package:sportzy/features/my_matches/provider/match_provider.dart';
 import 'package:sportzy/features/my_matches/widgets/my_match_card.dart';
+import 'package:sportzy/router/routes.dart';
 
 class MyMatchesScreen extends ConsumerWidget {
   const MyMatchesScreen({super.key});
@@ -23,7 +24,6 @@ class MyMatchesScreen extends ConsumerWidget {
       backgroundColor: AppColors.white,
       appBar: AppBar(
         title: const Text('My Matches'),
-        leading: const Icon(Icons.arrow_back_ios_new),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.black,
         elevation: 0,
@@ -152,7 +152,9 @@ class MyMatchesScreen extends ConsumerWidget {
                   backgroundColor: AppColors.red,
                   icon: Icon(Icons.create, color: AppColors.white),
 
-                  onPressed: Placeholder.new,
+                  onPressed: () {
+                    Navigator.pushNamed(context, Routes.createMatch);
+                  },
                   label: Text(
                     "Create Match",
                     style: TextStyle(
