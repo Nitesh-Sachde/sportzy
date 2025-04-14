@@ -73,7 +73,7 @@ class _HomeState extends ConsumerState<Home> {
                 ),
               ),
               Text(
-                "UID: $userId",
+                "ID: $userId",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: screenHeight * 0.016,

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/create_match/provider/match_creation_provider.dart';
+import 'package:sportzy/features/create_match/provider/match_form_provider.dart';
 
 class ModeSelector extends ConsumerWidget {
   const ModeSelector({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedMode = ref.watch(matchModeProvider);
-    final screenWidth = ScreenSize.screenWidth(context);
+    final selectedMode = ref.watch(matchFormProvider);
+    // final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
 
     return Column(
@@ -29,19 +29,19 @@ class ModeSelector extends ConsumerWidget {
           children: [
             _ModeTile(
               label: 'Singles',
-              isSelected: selectedMode == MatchMode.singles,
+              isSelected: selectedMode.mode == 'singles',
               onTap:
-                  () =>
-                      ref.read(matchModeProvider.notifier).state =
-                          MatchMode.singles,
+                  () => ref
+                      .read(matchFormProvider.notifier)
+                      .updateMode('singles'),
             ),
             _ModeTile(
               label: 'Doubles',
-              isSelected: selectedMode == MatchMode.doubles,
+              isSelected: selectedMode.mode == 'doubles',
               onTap:
-                  () =>
-                      ref.read(matchModeProvider.notifier).state =
-                          MatchMode.doubles,
+                  () => ref
+                      .read(matchFormProvider.notifier)
+                      .updateMode('doubles'),
             ),
           ],
         ),

@@ -54,7 +54,7 @@ Future<void> signIn({
   }
 }
 
-Future<void> signUp({
+Future<User?> signUp({
   required BuildContext context,
   required String name,
   required String email,
@@ -62,25 +62,26 @@ Future<void> signUp({
 }) async {
   try {
     final auth = FirebaseAuth.instance;
-    final firestore = FirebaseFirestore.instance;
-
-    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
+    final userCredential = await auth.createUserWithEmailAndPassword(
+      email: email.trim(),
+      password: password.trim(),
     );
+    final id = generateRandomUserId();
+    final user = userCredential.user;
+    await user!.updateDisplayName(name.trim());
 
-    final uid = userCredential.user!.uid;
-    final userId = generateRandomUserId();
-
-    await firestore.collection('users').doc(uid).set({
-      'uid': uid,
-      'userId': userId,
-      'name': name,
-      'email': email,
+    // Store user in Firestore
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'id': id,
+      'name': name.trim(),
+      'email': email.trim(),
+      'gender': '',
+      'age': '',
+      'phone': '',
+      'profileImageUrl': '',
+      'keywords': generateSearchKeywords(name.trim(), id.trim().toLowerCase()),
       'createdAt': FieldValue.serverTimestamp(),
     });
-
-    // Send verification email
     await userCredential.user!.sendEmailVerification();
 
     // Navigate to verification screen
@@ -88,6 +89,7 @@ Future<void> signUp({
       context,
       MaterialPageRoute(builder: (_) => const VerificationLinkSentPage()),
     );
+    return user;
   } on FirebaseAuthException catch (e) {
     ScaffoldMessenger.of(
       context,
@@ -105,4 +107,25 @@ Future<void> signUp({
       MaterialPageRoute(builder: (_) => const SignUpPage()),
     );
   }
+  return null;
+}
+
+final _auth = FirebaseAuth.instance;
+Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+User? get currentUser => _auth.currentUser;
+
+List<String> generateSearchKeywords(String name, String id) {
+  final List<String> keywords = [];
+
+  name = name.toLowerCase();
+  for (int i = 1; i <= name.length; i++) {
+    keywords.add(name.substring(0, i));
+  }
+
+  for (int i = 1; i <= id.length; i++) {
+    keywords.add(id.substring(0, i));
+  }
+
+  return keywords.toSet().toList();
 }

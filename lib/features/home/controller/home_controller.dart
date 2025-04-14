@@ -9,7 +9,7 @@ class HomeController {
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final data = doc.data();
       if (data != null) {
-        return {'name': data['name'] ?? '', 'userId': data['userId'] ?? ''};
+        return {'name': data['name'] ?? '', 'userId': data['id'] ?? ''};
       }
     }
     return {'name': '', 'userId': ''};

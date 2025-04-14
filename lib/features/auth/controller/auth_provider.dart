@@ -13,9 +13,28 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(auth);
 });
 
-final authStateProvider = StreamProvider<User?>((ref) {
+final authStateProvider = StreamProvider<User?>((ref) async* {
   final authRepo = ref.watch(authRepositoryProvider);
-  return authRepo.authStateChanges;
+  final firebaseAuth = ref.watch(firebaseAuthProvider);
+
+  await for (final user in authRepo.authStateChanges) {
+    if (user != null) {
+      try {
+        await user.reload();
+        final refreshedUser = firebaseAuth.currentUser;
+
+        if (refreshedUser == null) {
+          yield null; //  User deleted or signed out
+        } else {
+          yield refreshedUser; //  Still valid
+        }
+      } catch (e) {
+        yield null; //  Reload failed — possibly deleted
+      }
+    } else {
+      yield null; //  Not signed in
+    }
+  }
 });
 
 // Direct access to the current Firebase user (nullable)

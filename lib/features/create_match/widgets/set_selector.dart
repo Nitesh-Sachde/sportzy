@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/create_match/provider/set_point_provider.dart';
+import 'package:sportzy/features/create_match/provider/match_form_provider.dart';
 
 class SetSelector extends ConsumerWidget {
   const SetSelector({super.key});
@@ -12,8 +12,7 @@ class SetSelector extends ConsumerWidget {
     final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
 
-    final selectedSets = ref.watch(setsProvider);
-    final selectedPoints = ref.watch(pointsProvider);
+    final selectedSets = ref.watch(matchFormProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,14 +36,16 @@ class SetSelector extends ConsumerWidget {
                 child: ChoiceChip(
                   showCheckmark: false,
                   label: Text("$count"),
-                  selected: selectedSets == count,
+                  selected: selectedSets.sets == count,
                   onSelected:
-                      (_) => ref.read(setsProvider.notifier).state = count,
+                      (_) => ref
+                          .read(matchFormProvider.notifier)
+                          .updateSets(count),
                   selectedColor: AppColors.tabSelected,
                   backgroundColor: AppColors.tabUnselected,
                   labelStyle: TextStyle(
                     color:
-                        selectedSets == count
+                        selectedSets.sets == count
                             ? AppColors.white
                             : AppColors.black,
                   ),

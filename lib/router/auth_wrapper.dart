@@ -19,37 +19,44 @@ class AuthWrapper extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
-        if (user != null && user.emailVerified) {
-          return const HomePage();
-        } else if (user != null && !user.emailVerified) {
-          if (justSignedIn) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(justSignedInProvider.notifier).state = false;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const VerificationLinkSentPage(),
-                ),
-              );
-            });
-            return Scaffold(
-              body: Container(
-                color: AppColors.white,
-                child: Center(
-                  child: LoadingAnimationWidget.staggeredDotsWave(
-                    color: AppColors.primary,
-                    size: screenWidth * 0.2,
-                  ),
-                ),
+        if (user == null) {
+          return const SignInPage(); // ❌ Not signed in
+        }
+
+        if (user.emailVerified) {
+          return const HomePage(); // ✅ Signed in & verified
+        }
+
+        // 🟡 Not verified
+        if (justSignedIn) {
+          // Reset `justSignedIn` flag after navigation
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(justSignedInProvider.notifier).state = false;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const VerificationLinkSentPage(),
               ),
             );
-          } else {
-            // If app reopened and user is not verified
-            return const SignInPage();
-          }
-        } else {
-          return const SignInPage(); // 👤 Not signed in
+          });
+
+          // Loading screen while navigating
+          return Scaffold(
+            body: Container(
+              color: AppColors.white,
+              child: Center(
+                child: LoadingAnimationWidget.staggeredDotsWave(
+                  color: AppColors.primary,
+                  size: screenWidth * 0.2,
+                ),
+              ),
+            ),
+          );
         }
+
+        // 🟡 Not verified & not just signed in (e.g. app reopened)
+        return const VerificationLinkSentPage();
       },
       loading:
           () => Scaffold(

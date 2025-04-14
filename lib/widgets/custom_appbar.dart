@@ -18,7 +18,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.primary,
+      // foregroundColor: AppColors.primary,
       elevation: 0,
       leading:
           isBackButtonVisible

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:sportzy/models/player_model.dart';
 
 class TeamInputField extends ConsumerWidget {
   final String teamTitle;
-  final List<String> players;
+  final List<Player> players;
   final bool isDoubles;
   final Function(int, String) onChanged;
 
@@ -20,7 +21,14 @@ class TeamInputField extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenHeight = ScreenSize.screenHeight(context);
     final screenWidth = ScreenSize.screenWidth(context);
+    final expectedCount = isDoubles ? 2 : 1;
 
+    // Pad the players list with empty Player objects if needed
+    final paddedPlayers = List.generate(
+      expectedCount,
+      (index) =>
+          index < players.length ? players[index] : Player(name: '', id: ''),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,7 +44,7 @@ class TeamInputField extends ConsumerWidget {
           return Padding(
             padding: EdgeInsets.only(bottom: screenHeight * 0.015),
             child: TextFormField(
-              initialValue: players[index],
+              initialValue: paddedPlayers[index].name,
               onChanged: (value) => onChanged(index, value),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -45,7 +53,7 @@ class TeamInputField extends ConsumerWidget {
                 return null;
               },
               decoration: InputDecoration(
-                hintText: 'Player ${index + 1} Name',
+                hintText: 'Enter Team Name',
                 contentPadding: EdgeInsets.symmetric(
                   vertical: screenHeight * 0.018,
                   horizontal: screenWidth * 0.04,
