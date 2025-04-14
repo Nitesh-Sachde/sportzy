@@ -4,6 +4,7 @@ import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/provider/add_players_provider.dart';
 import 'package:sportzy/features/create_match/provider/match_form_provider.dart';
+import 'package:sportzy/features/create_match/service/match_service.dart';
 import 'package:sportzy/features/create_match/widgets/add_player_dialog.dart';
 import 'package:sportzy/features/create_match/widgets/mode_selector.dart';
 import 'package:sportzy/features/create_match/widgets/points_selector.dart';
@@ -171,9 +172,53 @@ class CreateMatchScreen extends ConsumerWidget {
                 width: double.infinity,
                 height: screenHeight * 0.065,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Validation & creation logic here
+                  onPressed: () async {
+                    final formData = ref.read(matchFormProvider);
+                    final team1 = ref.read(teamPlayersProvider(1));
+                    final team2 = ref.read(teamPlayersProvider(2));
+
+                    // Simple validation
+                    if (formData.sport.isEmpty ||
+                        formData.mode.isEmpty ||
+                        formData.sets == 0 ||
+                        formData.points == 0 ||
+                        formData.team1Name.isEmpty ||
+                        formData.team2Name.isEmpty ||
+                        team1.isEmpty ||
+                        team2.isEmpty ||
+                        formData.location.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Please complete all fields')),
+                      );
+                      return;
+                    }
+
+                    final matchService = MatchService();
+                    final match = matchService.buildMatchFromForm(
+                      sport: formData.sport,
+                      mode: formData.mode,
+                      sets: formData.sets,
+                      points: formData.points,
+                      team1Name: formData.team1Name,
+                      team2Name: formData.team2Name,
+                      team1Players: team1.map((p) => p.id).toList(),
+                      team2Players: team2.map((p) => p.id).toList(),
+                      location: formData.location,
+                    );
+
+                    await matchService.createMatch(match);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Match created: ${match.matchId}'),
+                      ),
+                    );
+
+                    Navigator.pop(context);
+                    ref.read(matchFormProvider.notifier).resetForm();
+                    ref.read(teamPlayersProvider(1).notifier).clearPlayers();
+                    ref.read(teamPlayersProvider(2).notifier).clearPlayers();
                   },
+
                   icon: Icon(
                     Icons.arrow_forward,
                     color: AppColors.white,

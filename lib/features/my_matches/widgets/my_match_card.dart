@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
-import 'package:sportzy/models/match_model.dart';
+import 'package:sportzy/features/my_matches/model/my_match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart'; // Assuming this is your screenSize.dart
 

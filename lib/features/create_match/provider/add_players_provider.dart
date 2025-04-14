@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sportzy/models/player_model.dart';
+import 'package:sportzy/features/create_match/model/player_model.dart';
 
 final teamPlayersProvider =
     StateNotifierProvider.family<TeamPlayersNotifier, List<Player>, int>(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/provider/add_players_provider.dart';
-import 'package:sportzy/models/player_model.dart';
+import 'package:sportzy/features/create_match/model/player_model.dart';
 
 class AddPlayerDialog extends ConsumerStatefulWidget {
   final int teamNumber;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/models/player_model.dart';
+import 'package:sportzy/features/create_match/model/player_model.dart';
 
 class TeamInputField extends ConsumerWidget {
   final String teamTitle;

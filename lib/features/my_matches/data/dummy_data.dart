@@ -1,4 +1,4 @@
-import 'package:sportzy/models/match_model.dart';
+import 'package:sportzy/features/my_matches/model/my_match_model.dart';
 
 final dummyMatches = [
   Match(

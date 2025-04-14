@@ -61,4 +61,8 @@ class MatchFormNotifier extends StateNotifier<MatchFormState> {
       state = state.copyWith(team2Name: name);
     }
   }
+
+  void resetForm() {
+    state = MatchFormState();
+  }
 }
