@@ -15,7 +15,7 @@ class MyMatchesScreen extends ConsumerWidget {
     final live = MatchFilter.live;
     final completed = MatchFilter.completed;
     final filter = ref.watch(matchFilterProvider);
-    final matches = ref.watch(matchListProvider);
+    final matchesAsync = ref.watch(matchListProvider);
 
     final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
@@ -47,10 +47,11 @@ class MyMatchesScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap:
-                              () =>
-                                  ref.read(matchFilterProvider.notifier).state =
-                                      live,
+                          onTap: () {
+                            ref.read(matchFilterProvider.notifier).state = live;
+                            // ignore: unused_result
+                            ref.refresh(matchListProvider);
+                          },
                           child: Container(
                             height: screenHeight * 0.06,
                             alignment: Alignment.center,
@@ -110,33 +111,44 @@ class MyMatchesScreen extends ConsumerWidget {
 
                 // Match Card List
                 // Inside MyMatchesScreen
+                // Match Card List
                 Expanded(
-                  child:
-                      matches.isEmpty
-                          ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/no_match_found.webp',
-                                  height: screenHeight * 0.27,
+                  child: matchesAsync.when(
+                    data: (matches) {
+                      if (matches.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/no_match_found.webp',
+                                height: screenHeight * 0.27,
+                              ),
+                              SizedBox(height: screenHeight * 0.05),
+                              Text(
+                                'No matches found!',
+                                style: TextStyle(
+                                  fontSize: screenHeight * 0.027,
                                 ),
-                                SizedBox(height: screenHeight * 0.05),
-                                Text(
-                                  'No matches found!',
-                                  style: TextStyle(
-                                    fontSize: screenHeight * 0.027,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                          : ListView.builder(
-                            itemCount: matches.length,
-                            itemBuilder: (context, index) {
-                              return MatchCard(match: matches[index]);
-                            },
+                              ),
+                            ],
                           ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: matches.length,
+                        itemBuilder: (context, index) {
+                          return MatchCard(match: matches[index]);
+                        },
+                      );
+                    },
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error:
+                        (err, stack) =>
+                            Center(child: Text('Error loading matches')),
+                  ),
                 ),
               ],
             ),
@@ -152,9 +164,12 @@ class MyMatchesScreen extends ConsumerWidget {
                   backgroundColor: AppColors.red,
                   icon: Icon(Icons.create, color: AppColors.white),
 
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.createMatch);
+                  onPressed: () async {
+                    await Navigator.pushNamed(context, Routes.createMatch);
+                    // ignore: unused_result
+                    ref.refresh(matchListProvider); // Refresh after coming back
                   },
+
                   label: Text(
                     "Create Match",
                     style: TextStyle(

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/validators.dart';
 import 'package:sportzy/features/auth/controller/auth_controller.dart';
-import 'package:sportzy/features/auth/controller/auth_provider.dart';
-import 'package:sportzy/features/auth/pages/forgot_password_page.dart';
-import 'package:sportzy/features/auth/pages/sign_up_page.dart';
+import 'package:sportzy/features/auth/provider/auth_provider.dart';
+import 'package:sportzy/features/auth/screen/forgot_password_page.dart';
+import 'package:sportzy/features/auth/screen/sign_up_page.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
@@ -39,7 +39,12 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     double textSize = screenWidth * 0.08;
 
     return Scaffold(
-      appBar: const CustomAppBar(title: "Sign In", isBackButtonVisible: false),
+      appBar: CustomAppBar(
+        title: "Sign In",
+        isBackButtonVisible: false,
+        showDelete: false,
+        showShare: false,
+      ),
       backgroundColor: AppColors.primary,
 
       body: ClipRRect(

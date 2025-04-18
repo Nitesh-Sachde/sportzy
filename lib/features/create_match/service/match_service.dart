@@ -1,6 +1,8 @@
-// lib/features/create_match/services/match_service.dart
+// lib/features/create_match/service/match_service.dart
+
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../model/match_model.dart';
 
 class MatchService {
@@ -22,11 +24,19 @@ class MatchService {
     );
   }
 
-  Future<void> createMatch(MatchModel match) async {
-    await _firestore
-        .collection("matches")
-        .doc(match.matchId)
-        .set(match.toMap());
+  Future<bool> createMatch(MatchModel match) async {
+    try {
+      debugPrint("Attempting to create match: ${match.matchId}");
+      await _firestore
+          .collection("matches")
+          .doc(match.matchId)
+          .set(match.toMap());
+      debugPrint("Match created successfully: ${match.matchId}");
+      return true;
+    } catch (e) {
+      debugPrint("Error creating match: $e");
+      return false;
+    }
   }
 
   MatchModel buildMatchFromForm({
@@ -37,10 +47,14 @@ class MatchService {
     required String team1Name,
     required String team2Name,
     required List<String> team1Players,
+    required List<String> team1PlayerName,
     required List<String> team2Players,
+    required List<String> team2PlayerName,
+
     required String location,
   }) {
     final matchId = _generateMatchId(sport, mode);
+    debugPrint("Generated matchId: $matchId");
 
     final keywords = [
       ...generateKeywords(matchId),
@@ -58,11 +72,15 @@ class MatchService {
       team1Name: team1Name,
       team2Name: team2Name,
       team1Players: team1Players,
+      team1PlayerName: team1PlayerName,
       team2Players: team2Players,
+      team2PlayerName: team2PlayerName,
       location: location,
       status: 'upcoming',
       createdAt: DateTime.now(),
-      keywords: keywords.toSet().toList(), // remove duplicates
+      keywords: keywords.toSet().toList(),
+      scores: List.generate(sets, (_) => [0, 0]),
+      currentSetIndex: 0,
     );
   }
 }

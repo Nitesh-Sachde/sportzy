@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:sportzy/features/home/pages/home_page.dart';
-import 'package:sportzy/features/auth/pages/sign_up_page.dart';
+import 'package:sportzy/features/home/screen/home_page.dart';
+import 'package:sportzy/features/auth/screen/sign_up_page.dart';
 import 'dart:math';
 
-import 'package:sportzy/features/auth/pages/verification_link_sent_page.dart';
+import 'package:sportzy/features/auth/screen/verification_link_sent_page.dart';
 
 String generateRandomUserId() {
   final random = Random();

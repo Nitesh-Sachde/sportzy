@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/auth/controller/auth_provider.dart';
-import 'package:sportzy/features/home/pages/home_page.dart';
-import 'package:sportzy/features/auth/pages/sign_in_page.dart';
-import 'package:sportzy/features/auth/pages/verification_link_sent_page.dart';
+import 'package:sportzy/features/auth/provider/auth_provider.dart';
+import 'package:sportzy/features/home/screen/home_page.dart';
+import 'package:sportzy/features/auth/screen/sign_in_page.dart';
+import 'package:sportzy/features/auth/screen/verification_link_sent_page.dart';
 
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});

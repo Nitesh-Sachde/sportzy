@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/home/pages/home.dart';
-import 'package:sportzy/features/my_matches/pages/my_matches_screen.dart';
+import 'package:sportzy/features/home/screen/dashboard.dart';
+import 'package:sportzy/features/my_matches/screen/my_matches_screen.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});

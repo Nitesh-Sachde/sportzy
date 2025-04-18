@@ -11,6 +11,8 @@ import 'package:sportzy/features/create_match/widgets/points_selector.dart';
 import 'package:sportzy/features/create_match/widgets/set_selector.dart';
 import 'package:sportzy/features/create_match/widgets/sport_selector.dart';
 import 'package:sportzy/features/create_match/widgets/player_card.dart';
+import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';
+import 'package:sportzy/router/routes.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 
 class CreateMatchScreen extends ConsumerWidget {
@@ -43,6 +45,8 @@ class CreateMatchScreen extends ConsumerWidget {
       appBar: CustomAppBar(
         title: "Match Details",
         isBackButtonVisible: true,
+        showDelete: false,
+        showShare: false,
         onBack: () {
           Navigator.pop(context);
         },
@@ -168,6 +172,7 @@ class CreateMatchScreen extends ConsumerWidget {
                         .updateLocation(val),
               ),
               SizedBox(height: screenHeight * 0.04),
+              // Modified part of CreateMatchScreen
               SizedBox(
                 width: double.infinity,
                 height: screenHeight * 0.065,
@@ -188,37 +193,94 @@ class CreateMatchScreen extends ConsumerWidget {
                         team2.isEmpty ||
                         formData.location.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Please complete all fields')),
+                        const SnackBar(
+                          content: Text('Please complete all fields'),
+                        ),
                       );
                       return;
                     }
 
-                    final matchService = MatchService();
-                    final match = matchService.buildMatchFromForm(
-                      sport: formData.sport,
-                      mode: formData.mode,
-                      sets: formData.sets,
-                      points: formData.points,
-                      team1Name: formData.team1Name,
-                      team2Name: formData.team2Name,
-                      team1Players: team1.map((p) => p.id).toList(),
-                      team2Players: team2.map((p) => p.id).toList(),
-                      location: formData.location,
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder:
+                          (context) =>
+                              const Center(child: CircularProgressIndicator()),
                     );
 
-                    await matchService.createMatch(match);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Match created: ${match.matchId}'),
-                      ),
-                    );
+                    try {
+                      final matchService = MatchService();
+                      final match = matchService.buildMatchFromForm(
+                        sport: formData.sport,
+                        mode: formData.mode,
+                        sets: formData.sets,
+                        points: formData.points,
+                        team1Name: formData.team1Name,
+                        team2Name: formData.team2Name,
+                        team1Players: team1.map((p) => p.id).toList(),
+                        team2Players: team2.map((p) => p.id).toList(),
+                        team1PlayerName: team1.map((p) => p.name).toList(),
+                        team2PlayerName: team2.map((p) => p.name).toList(),
+                        location: formData.location,
+                      );
 
-                    Navigator.pop(context);
-                    ref.read(matchFormProvider.notifier).resetForm();
-                    ref.read(teamPlayersProvider(1).notifier).clearPlayers();
-                    ref.read(teamPlayersProvider(2).notifier).clearPlayers();
+                      final success = await matchService.createMatch(match);
+
+                      // Close loading dialog
+                      Navigator.of(context).pop();
+
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Match created: ${match.matchId}'),
+                          ),
+                        );
+                        ref.read(matchFormProvider.notifier).resetForm();
+                        ref
+                            .read(teamPlayersProvider(1).notifier)
+                            .clearPlayers();
+                        ref
+                            .read(teamPlayersProvider(2).notifier)
+                            .clearPlayers();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    ScoreEntryScreen(matchId: match.matchId),
+                          ),
+                        );
+
+                        ref.read(matchFormProvider.notifier).resetForm();
+                        ref
+                            .read(teamPlayersProvider(1).notifier)
+                            .clearPlayers();
+                        ref
+                            .read(teamPlayersProvider(2).notifier)
+                            .clearPlayers();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Failed to create match. Check your connection.',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // Close loading dialog
+                      Navigator.of(context).pop();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
-
                   icon: Icon(
                     Icons.arrow_forward,
                     color: AppColors.white,

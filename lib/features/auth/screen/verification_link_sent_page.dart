@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/home/pages/home_page.dart';
+import 'package:sportzy/features/home/screen/home_page.dart';
 import 'package:sportzy/router/routes.dart';
 
 class VerificationLinkSentPage extends StatefulWidget {

@@ -6,4 +6,5 @@ class Routes {
   static const emailVerification = '/emailVerification';
   static const myMatches = '/mymatches';
   static const createMatch = '/createMatch';
+  static const scoreEntry = '/scoreEntry';
 }

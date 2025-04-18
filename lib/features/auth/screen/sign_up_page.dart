@@ -3,7 +3,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/validators.dart';
 import 'package:sportzy/features/auth/controller/auth_controller.dart';
-import 'package:sportzy/features/auth/pages/sign_in_page.dart';
+import 'package:sportzy/features/auth/screen/sign_in_page.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
@@ -51,6 +51,8 @@ class _SignUpPageState extends State<SignUpPage> {
           appBar: CustomAppBar(
             title: "Sign Up",
             isBackButtonVisible: true,
+            showDelete: false,
+            showShare: false,
             onBack:
                 () => Navigator.pushAndRemoveUntil(
                   context,

@@ -70,7 +70,7 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
     final borderRadius = height * 0.02;
 
     return AlertDialog(
-      title: const Text('Search Player'),
+      title: Text('Search Player'),
       content: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: height * 0.65),

@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/features/my_matches/model/my_match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sportzy/core/utils/screen_size.dart'; // Assuming this is your screenSize.dart
+import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';
 
 class MatchCard extends ConsumerWidget {
-  final Match match;
+  final MatchModel match;
   const MatchCard({super.key, required this.match});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
-
+    final dateFormatter = DateFormat('dd MMM yyyy • hh:mm a');
     return GestureDetector(
       onTap: () {
-        // Handle tap event
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScoreEntryScreen(matchId: match.matchId),
+          ),
+        );
       },
+
       child: Container(
         margin: EdgeInsets.symmetric(
           vertical: screenHeight * 0.01,
@@ -92,7 +100,7 @@ class MatchCard extends ConsumerWidget {
                           ),
                           SizedBox(width: screenWidth * 0.01),
                           Text(
-                            match.type,
+                            match.mode,
                             style: TextStyle(
                               color:
                                   match.sport.toLowerCase() == 'badminton'
@@ -117,7 +125,7 @@ class MatchCard extends ConsumerWidget {
                           ),
                           SizedBox(width: screenWidth * 0.01),
                           Text(
-                            match.venue,
+                            match.location,
                             style: TextStyle(
                               color:
                                   match.sport.toLowerCase() == 'badminton'
@@ -130,7 +138,7 @@ class MatchCard extends ConsumerWidget {
                       ),
                       SizedBox(height: screenHeight * 0.005),
                       Text(
-                        match.dateTime,
+                        dateFormatter.format(match.createdAt),
                         style: TextStyle(
                           color:
                               match.sport.toLowerCase() == 'badminton'
@@ -148,7 +156,7 @@ class MatchCard extends ConsumerWidget {
                           ? Column(
                             children: [
                               Text(
-                                match.team1,
+                                match.team1Name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: screenHeight * 0.025,
@@ -169,7 +177,7 @@ class MatchCard extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                match.team2,
+                                match.team2Name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: screenHeight * 0.025,
@@ -181,7 +189,7 @@ class MatchCard extends ConsumerWidget {
                           : Column(
                             children: [
                               Text(
-                                match.team1,
+                                match.team1Name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: screenHeight * 0.025,
@@ -202,7 +210,7 @@ class MatchCard extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                match.team2,
+                                match.team2Name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: screenHeight * 0.025,
