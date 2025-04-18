@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
@@ -11,8 +12,8 @@ import 'package:sportzy/features/create_match/widgets/points_selector.dart';
 import 'package:sportzy/features/create_match/widgets/set_selector.dart';
 import 'package:sportzy/features/create_match/widgets/sport_selector.dart';
 import 'package:sportzy/features/create_match/widgets/player_card.dart';
+import 'package:sportzy/features/my_matches/provider/match_provider.dart';
 import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';
-import 'package:sportzy/router/routes.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 
 class CreateMatchScreen extends ConsumerWidget {
@@ -236,6 +237,13 @@ class CreateMatchScreen extends ConsumerWidget {
                             content: Text('Match created: ${match.matchId}'),
                           ),
                         );
+                        FirebaseFirestore.instance
+                            .collection("matches")
+                            .doc(
+                              match.matchId,
+                            ) // you'll need to pass matchId in ScoreNotifier too
+                            .update({"status": "live"});
+                        ref.refresh(filteredMatchListProvider);
                         ref.read(matchFormProvider.notifier).resetForm();
                         ref
                             .read(teamPlayersProvider(1).notifier)

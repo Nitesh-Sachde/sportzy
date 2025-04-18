@@ -1,92 +1,109 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sportzy/features/scorecard/provider/match_provider_to_scorecard.dart';
 
 final scoreNotifierProvider =
     StateNotifierProvider.family<ScoreNotifier, List<List<int>>, String>((
       ref,
       matchId,
     ) {
-      return ScoreNotifier();
+      return ScoreNotifier(matchId: matchId);
     });
 
 class ScoreNotifier extends StateNotifier<List<List<int>>> {
-  ScoreNotifier()
-    : super([
-        [0, 0],
-      ]); // Start with one set
-
+  final String matchId;
+  ScoreNotifier({required this.matchId}) : super([[]]);
   int _currentSetIndex = 0;
+  bool _matchCompleted = false;
 
-  int get currentSetIndex {
-    if (state.isEmpty) return 0;
-    return _currentSetIndex.clamp(0, state.length - 1);
-  }
+  int get currentSetIndex => _currentSetIndex;
+  bool get matchCompleted => _matchCompleted;
 
-  set currentSetIndex(int value) {
-    if (state.isEmpty) {
-      _currentSetIndex = 0;
-    } else {
-      _currentSetIndex = value.clamp(0, state.length - 1);
-    }
-  }
-
-  void increaseScore(int teamIndex) {
-    if (teamIndex < 0 || teamIndex >= 2) return;
+  void increaseScore(
+    int teamIndex,
+    int maxPoints,
+    int totalSets,
+    BuildContext context,
+  ) {
+    if (_matchCompleted || teamIndex < 0 || teamIndex > 1) return;
 
     final updatedState = [...state];
 
-    // Validate current index
-    if (_currentSetIndex >= updatedState.length) {
-      updatedState.add([0, 0]);
-      _currentSetIndex = updatedState.length - 1;
-    }
-
-    // Validate inner score list
-    if (updatedState[_currentSetIndex].length != 2) {
-      updatedState[_currentSetIndex] = [0, 0];
-    }
-
     updatedState[_currentSetIndex][teamIndex]++;
+
+    final team1 = updatedState[_currentSetIndex][0];
+    final team2 = updatedState[_currentSetIndex][1];
+
+    // Check deuce logic and win condition
+    if ((team1 >= maxPoints || team2 >= maxPoints) &&
+        (team1 - team2).abs() >= 2) {
+      final winner = team1 > team2 ? 0 : 1;
+      _showSnackBar(
+        context,
+        "Set ${_currentSetIndex + 1} won by Team ${winner + 1}",
+      );
+      _currentSetIndex = _currentSetIndex + 1;
+      // Check how many sets each team has won
+      int team1Wins = 0;
+      int team2Wins = 0;
+      for (var s in updatedState) {
+        if (s[0] > s[1])
+          team1Wins++;
+        else if (s[1] > s[0])
+          team2Wins++;
+      }
+
+      final requiredWins = (totalSets / 2).ceil();
+      if (team1Wins >= requiredWins || team2Wins >= requiredWins) {
+        _matchCompleted = true;
+        final winningTeamName = team1Wins > team2Wins ? 'Team 1' : 'Team 2';
+
+        _showSnackBar(context, "🎉 $winningTeamName won the match!");
+
+        // 🔥 Update match status in Firebase
+        FirebaseFirestore.instance
+            .collection("matches")
+            .doc(matchId) // you'll need to pass matchId in ScoreNotifier too
+            .update({"status": "completed"});
+      }
+    }
+
     state = updatedState;
   }
 
   void decreaseScore(int teamIndex) {
-    if (teamIndex < 0 || teamIndex >= 2) return;
+    if (_matchCompleted || teamIndex < 0 || teamIndex > 1) return;
 
     final updatedState = [...state];
-
-    // Ensure currentSetIndex is valid
     if (_currentSetIndex >= updatedState.length) return;
-
-    // Ensure current set has exactly two scores
-    if (updatedState[_currentSetIndex].length != 2) {
-      updatedState[_currentSetIndex] = [0, 0];
-    }
-
-    // Only decrease if score is greater than zero
     if (updatedState[_currentSetIndex][teamIndex] > 0) {
       updatedState[_currentSetIndex][teamIndex]--;
       state = updatedState;
     }
   }
 
-  void addNewSet() {
-    final updatedState = [
-      ...state,
-      [0, 0],
-    ];
-    state = updatedState;
-    _currentSetIndex = updatedState.length - 1;
+  void loadExistingScores(List<List<int>> existingScores) {
+    state = existingScores;
+    _currentSetIndex = currentSetIndex;
+    _matchCompleted = false;
   }
 
-  void loadExistingScores(List<List<int>> existingScores) {
-    if (existingScores.isEmpty || existingScores.any((s) => s.length != 2)) {
-      state = [
-        [0, 0],
-      ];
-      _currentSetIndex = 0;
-    } else {
-      state = existingScores;
-      _currentSetIndex = existingScores.length - 1;
-    }
+  void reset() {
+    _matchCompleted = false;
+    _currentSetIndex = 0;
+    state = [
+      [0, 0],
+    ];
+  }
+
+  void _showSnackBar(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.black87,
+      ),
+    );
   }
 }

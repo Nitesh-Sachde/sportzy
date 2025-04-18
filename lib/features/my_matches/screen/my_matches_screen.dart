@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/my_matches/provider/match_filter_provider.dart';
 import 'package:sportzy/features/my_matches/provider/match_provider.dart';
 import 'package:sportzy/features/my_matches/widgets/my_match_card.dart';
 import 'package:sportzy/router/routes.dart';
@@ -15,8 +14,8 @@ class MyMatchesScreen extends ConsumerWidget {
     final live = MatchFilter.live;
     final completed = MatchFilter.completed;
     final filter = ref.watch(matchFilterProvider);
-    final matchesAsync = ref.watch(matchListProvider);
-
+    final matchesAsync = ref.watch(filteredMatchListProvider);
+    ref.refresh(filteredMatchListProvider);
     final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
 
@@ -49,9 +48,10 @@ class MyMatchesScreen extends ConsumerWidget {
                         child: GestureDetector(
                           onTap: () {
                             ref.read(matchFilterProvider.notifier).state = live;
-                            // ignore: unused_result
-                            ref.refresh(matchListProvider);
+                            ref.refresh(filteredMatchListProvider);
                           },
+
+                          // ignore: unused_result
                           child: Container(
                             height: screenHeight * 0.06,
                             alignment: Alignment.center,
@@ -78,10 +78,12 @@ class MyMatchesScreen extends ConsumerWidget {
                       SizedBox(width: screenWidth * 0.02),
                       Expanded(
                         child: GestureDetector(
-                          onTap:
-                              () =>
-                                  ref.read(matchFilterProvider.notifier).state =
-                                      completed,
+                          onTap: () {
+                            ref.read(matchFilterProvider.notifier).state =
+                                completed;
+                            ref.refresh(filteredMatchListProvider);
+                          },
+
                           child: Container(
                             height: screenHeight * 0.06,
                             alignment: Alignment.center,
@@ -166,8 +168,6 @@ class MyMatchesScreen extends ConsumerWidget {
 
                   onPressed: () async {
                     await Navigator.pushNamed(context, Routes.createMatch);
-                    // ignore: unused_result
-                    ref.refresh(matchListProvider); // Refresh after coming back
                   },
 
                   label: Text(

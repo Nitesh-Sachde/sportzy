@@ -12,8 +12,14 @@ class MatchService {
     };
 
     await FirebaseFirestore.instance.collection('matches').doc(matchId).update({
-      'scoresMap': scoresMap, // ✅ correct key and format
+      'scoresMap': scoresMap,
       'currentSetIndex': scores.length - 1,
+    });
+  }
+
+  static Future<void> markMatchCompleted(String matchId) async {
+    await FirebaseFirestore.instance.collection('matches').doc(matchId).update({
+      'status': 'completed',
     });
   }
 }

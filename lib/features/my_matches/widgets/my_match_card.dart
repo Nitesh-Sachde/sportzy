@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
-import 'package:sportzy/features/my_matches/model/my_match_model.dart';
+import 'package:sportzy/features/create_match/model/match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';

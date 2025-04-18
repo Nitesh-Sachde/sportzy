@@ -30,22 +30,14 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
     final scoreNotifier = ref.read(
       scoreNotifierProvider(widget.matchId).notifier,
     );
-    final scoreState = ref.watch(scoreNotifierProvider(widget.matchId));
+    final scoreState = ref.read(scoreNotifierProvider(widget.matchId));
     debugPrint(widget.matchId);
 
     // Make sure scores is not empty
-    final scores =
-        scoreState.isNotEmpty
-            ? scoreState.where((s) => s.length == 2).toList()
-            : [
-              [0, 0],
-            ];
+    final scores = scoreState.toList();
 
     // Safety check for currentSetIndex
-    final currentSetIndex =
-        scoreState.isNotEmpty
-            ? scoreNotifier.currentSetIndex.clamp(0, scores.length - 1)
-            : 0;
+    final currentSetIndex = scoreNotifier.currentSetIndex;
     debugPrint('SCORES: $scores | currentSetIndex: $currentSetIndex');
     for (int i = 0; i < scores.length; i++) {
       debugPrint('Set $i: ${scores[i]} | length: ${scores[i].length}');
@@ -74,13 +66,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
           if (!_initialized) {
             Future.microtask(() {
               // Initialize with default score if match.scores is empty
-              final matchScores =
-                  match.scores.isNotEmpty
-                      ? match.scores
-                      : [
-                        [0, 0],
-                      ];
-
+              final matchScores = match.scores;
               scoreNotifier.loadExistingScores(
                 List<List<int>>.from(
                   matchScores.map<List<int>>((s) => List<int>.from(s)),
@@ -109,46 +95,82 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                   match.sport.toLowerCase() == 'badminton',
                 ),
                 SizedBox(height: screenHeight * 0.02),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildTeamBox(
-                      match.team1Name,
-                      match.mode == 'singles'
-                          ? match.team1PlayerName[0]
-                          : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
-                      screenWidth,
-                    ),
-                    const Text(
-                      "vs",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.bTeamBarBackground,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildTeamBox(
+                        match.team1Name,
+                        match.mode == 'singles'
+                            ? match.team1PlayerName[0]
+                            : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
+                        screenWidth,
                       ),
-                    ),
-                    _buildTeamBox(
-                      match.team2Name,
-                      match.mode == 'singles'
-                          ? match.team2PlayerName[0]
-                          : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
-                      screenWidth,
-                    ),
-                  ],
+                      const Text(
+                        "vs",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      _buildTeamBox(
+                        match.team2Name,
+                        match.mode == 'singles'
+                            ? match.team2PlayerName[0]
+                            : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
+                        screenWidth,
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
                 // Safety check: Only show scores if list is not empty and index is valid
-                scores.isNotEmpty && currentSetIndex <= scores.length
+                scores.isNotEmpty && currentSetIndex < scores.length
                     ? Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildScoreBox(
-                          "${scores[currentSetIndex][0]}",
-                          screenWidth,
+                        GestureDetector(
+                          onTap: () {
+                            scoreNotifier.increaseScore(
+                              0,
+                              match.points,
+                              match.sets,
+                              context,
+                            );
+
+                            MatchService.updateMatchScores(
+                              matchId: match.matchId,
+                              scores: scoreNotifier.state,
+                            );
+                          },
+                          child: _buildScoreBox(
+                            "${scores[currentSetIndex][0]}",
+                            screenWidth,
+                          ),
                         ),
-                        _buildScoreBox(
-                          "${scores[currentSetIndex][1]}",
-                          screenWidth,
+
+                        GestureDetector(
+                          onTap: () {
+                            scoreNotifier.increaseScore(
+                              1,
+                              match.points,
+                              match.sets,
+                              context,
+                            );
+
+                            MatchService.updateMatchScores(
+                              matchId: match.matchId,
+                              scores: scoreNotifier.state,
+                            );
+                          },
+                          child: _buildScoreBox(
+                            "${scores[currentSetIndex][1]}",
+                            screenWidth,
+                          ),
                         ),
                       ],
                     )
@@ -165,24 +187,32 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        scoreNotifier.increaseScore(0);
+                        scoreNotifier.decreaseScore(0);
                         MatchService.updateMatchScores(
                           matchId: match.matchId,
                           scores: scoreNotifier.state,
                         );
                       },
-
-                      child: const Icon(Icons.arrow_drop_up, size: 32),
+                      child: const Icon(
+                        Icons.arrow_drop_down,
+                        size: 28,
+                        color: Colors.black,
+                      ),
                     ),
+
                     GestureDetector(
                       onTap: () {
-                        scoreNotifier.increaseScore(1);
+                        scoreNotifier.decreaseScore(1);
                         MatchService.updateMatchScores(
                           matchId: match.matchId,
                           scores: scoreNotifier.state,
                         );
                       },
-                      child: const Icon(Icons.arrow_drop_up, size: 32),
+                      child: const Icon(
+                        Icons.arrow_drop_down,
+                        size: 28,
+                        color: Colors.black,
+                      ),
                     ),
                   ],
                 ),
@@ -191,7 +221,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                   screenHeight,
                   screenWidth,
                   currentSetIndex,
-                  scores,
+                  scores.sublist(0, currentSetIndex), // 👈 Completed sets only
                 ),
               ],
             ),
