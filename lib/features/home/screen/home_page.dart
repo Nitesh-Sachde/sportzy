@@ -5,6 +5,7 @@ import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/home/screen/dashboard.dart';
 import 'package:sportzy/features/my_matches/screen/my_matches_screen.dart';
+import 'package:sportzy/features/playerprofile/profile.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -18,8 +19,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   final List<Widget> _screens = [
     const MyMatchesScreen(), // Replace with your Matches/History screen
-    const Dashboard(), // Home screen content
-    const Placeholder(), // Settings/Profile screen
+    const Dashboard(), // Home screen content // Settings/Profile screen
+    const UserProfilePage(),
   ];
 
   @override

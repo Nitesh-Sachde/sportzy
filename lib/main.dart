@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sportzy/router/auth_wrapper.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +13,6 @@ import 'package:sportzy/features/auth/screen/sign_in_page.dart';
 import 'package:sportzy/features/auth/screen/sign_up_page.dart';
 import 'package:sportzy/features/home/screen/live_match_scorecard.dart';
 import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
-import 'package:sportzy/router/auth_wrapper.dart';
 import 'package:sportzy/router/routes.dart';
 import 'package:sportzy/firebase_options.dart';
 import 'package:sportzy/core/utils/dynamic_link_service.dart';
@@ -80,7 +81,7 @@ class _SportzyAppState extends ConsumerState<SportzyApp> {
       debugShowCheckedModeBanner: false,
       title: "Sportzy",
       theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
-      home: const AuthWrapper(),
+      home: const AuthWrapper(), // This will handle the authentication check
       routes: {
         Routes.home: (context) => const HomePage(),
         Routes.signIn: (context) => const SignInPage(),
@@ -94,6 +95,32 @@ class _SportzyAppState extends ConsumerState<SportzyApp> {
           final matchId = ModalRoute.of(context)!.settings.arguments as String;
           return PastMatchScoreCard(matchId: matchId);
         },
+      },
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Stream to listen to auth state changes
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // You can show a loading indicator if needed
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasData) {
+          // User is logged in, show the HomePage
+          return const HomePage();
+        } else {
+          // User is not logged in, show the SignInPage
+          return const SignInPage();
+        }
       },
     );
   }

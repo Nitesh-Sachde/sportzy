@@ -91,7 +91,10 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
           }
 
           return Container(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.01,
+              vertical: screenHeight * 0.02,
+            ),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -396,6 +399,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildScoreBox(team1Score, width),
+            SizedBox(width: width * 0.05),
             _buildScoreBox(team2Score, width),
           ],
         ),
