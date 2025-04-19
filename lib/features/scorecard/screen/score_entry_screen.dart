@@ -4,11 +4,10 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
-import 'package:sportzy/features/my_matches/screen/my_matches_screen.dart';
 import 'package:sportzy/features/scorecard/service/match_service.dart';
 import 'package:sportzy/features/scorecard/provider/match_provider_to_scorecard.dart';
 import 'package:sportzy/features/scorecard/provider/score_notifier.dart';
-import 'package:sportzy/router/routes.dart';
+
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:intl/intl.dart';
 
