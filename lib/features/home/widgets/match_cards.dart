@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
-import 'package:sportzy/features/home/screen/live_scorecard_screen.dart';
+import 'package:sportzy/features/home/screen/live_match_scorecard.dart';
 import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
 
 class LiveMatchCard extends ConsumerWidget {
@@ -27,7 +27,7 @@ class LiveMatchCard extends ConsumerWidget {
           () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => LiveScorecardScreen(matchId: match.matchId),
+              builder: (context) => LiveMatchScoreCard(matchId: match.matchId),
             ),
           ),
       child: Container(

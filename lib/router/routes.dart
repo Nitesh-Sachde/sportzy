@@ -7,5 +7,6 @@ class Routes {
   static const myMatches = '/mymatches';
   static const createMatch = '/createMatch';
   static const scoreEntry = '/scoreEntry';
-  static const liveScoreCard = '/liveScoreCard';
+  static const liveMatchScoreCard = '/liveMatchScoreCard';
+  static const pastMatchScoreCard = '/pastMatchScoreCard';
 }

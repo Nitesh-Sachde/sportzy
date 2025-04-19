@@ -47,6 +47,7 @@ dependencies:
   intl: ^0.20.2
   flutter_displaymode: ^0.6.0
   share_plus: ^10.1.4
+  firebase_dynamic_links: ^6.1.5
 
 dev_dependencies:
   flutter_test:

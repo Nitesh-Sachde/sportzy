@@ -1,7 +1,11 @@
+// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
+import 'package:sportzy/core/utils/dynamic_link_service.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
 import 'package:sportzy/features/scorecard/service/match_service.dart';
@@ -52,6 +56,12 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
         showDelete: true,
         showShare: true,
         isBackButtonVisible: true,
+        onShare: () async {
+          final shortLink = await DynamicLinkService.createMatchDynamicLink(
+            widget.matchId,
+          );
+          Share.share('Check out this match on Sportzy: $shortLink');
+        },
       ),
       body: matchAsync.when(
         loading:
@@ -353,7 +363,9 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        "${match.sets} SETS",
+                        match.sets == 1
+                            ? "${match.sets} SET"
+                            : "${match.sets} SETS",
                         style: TextStyle(
                           color: AppColors.amber,
                           fontSize: screenWidth * 0.06,
@@ -479,44 +491,74 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
     }
 
     return Column(
-      children: List.generate(scores.length, (index) {
-        // Safety check to ensure we don't go out of bounds
-        if (index >= scores.length || scores[index].length < 2) {
-          return const SizedBox.shrink(); // Skip if out of bounds
-        }
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: width * 0.05,
+            vertical: height * 0.01,
+          ),
+          child: Text(
+            "COMPLETED SETS",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: width * 0.05,
+              color: AppColors.black,
+            ),
+          ),
+        ),
+        ...List.generate(scores.length, (index) {
+          // If this is the current set and it's not completed, don't show it
+          if (index >= scores.length || scores[index].length < 2) {
+            return const SizedBox.shrink(); // Skip if out of bounds
+          }
 
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: height * 0.005),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _setScoreBox("${scores[index][0]}", width, height),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: width * 0.03,
-                  vertical: height * 0.01,
-                ),
-                height: height * 0.045,
-                width: width * 0.17,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Text(
-                    "SET ${index + 1}",
-                    style: const TextStyle(
-                      color: AppColors.amber,
-                      fontWeight: FontWeight.bold,
+          return Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: height * 0.005,
+              horizontal: width * 0.05,
+            ),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                vertical: height * 0.01,
+                horizontal: width * 0.02,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _setScoreBox("${scores[index][0]}", width, height),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: width * 0.03,
+                      vertical: height * 0.01,
+                    ),
+                    height: height * 0.045,
+                    width: width * 0.17,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "SET ${index + 1}",
+                        style: const TextStyle(
+                          color: AppColors.amber,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  _setScoreBox("${scores[index][1]}", width, height),
+                ],
               ),
-              _setScoreBox("${scores[index][1]}", width, height),
-            ],
-          ),
-        );
-      }),
+            ),
+          );
+        }),
+      ],
     );
   }
 

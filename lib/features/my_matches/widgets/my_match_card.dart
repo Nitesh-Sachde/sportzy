@@ -19,7 +19,7 @@ class MatchCard extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         match.status == 'live'
-            ? Navigator.pushReplacement(
+            ? Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ScoreEntryScreen(matchId: match.matchId),

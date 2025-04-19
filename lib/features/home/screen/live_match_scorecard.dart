@@ -10,16 +10,16 @@ import 'package:sportzy/features/scorecard/provider/match_provider_to_scorecard.
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:intl/intl.dart';
 
-class PastMatchScoreCard extends ConsumerStatefulWidget {
+class LiveMatchScoreCard extends ConsumerStatefulWidget {
   final String matchId;
 
-  const PastMatchScoreCard({super.key, required this.matchId});
+  const LiveMatchScoreCard({super.key, required this.matchId});
 
   @override
-  ConsumerState<PastMatchScoreCard> createState() => _PastMatchScoreCardState();
+  ConsumerState<LiveMatchScoreCard> createState() => _LiveMatchScoreCardState();
 }
 
-class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
+class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
   bool _initialized = false;
 
   @override
@@ -27,13 +27,12 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     final screenHeight = ScreenSize.screenHeight(context);
     final screenWidth = ScreenSize.screenWidth(context);
     final matchAsync = ref.watch(matchByIdProvider(widget.matchId));
-    final matchId = widget.matchId;
 
     return Scaffold(
       extendBodyBehindAppBar: false,
       backgroundColor: AppColors.primary,
       appBar: CustomAppBar(
-        title: "Match Result",
+        title: "Live Match",
         showShare: true,
         isBackButtonVisible: true,
         onShare: () async {
@@ -63,9 +62,11 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
             });
           }
 
-          // Calculate which team won the match
+          // Calculate current score and stats
           int team1Wins = 0;
           int team2Wins = 0;
+          int currentSet = match.currentSetIndex + 1;
+
           for (var set in match.scores) {
             if (set[0] > set[1]) {
               team1Wins++;
@@ -74,11 +75,20 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
             }
           }
 
-          final team1IsWinner = team1Wins > team2Wins;
-          final team2IsWinner = team2Wins > team1Wins;
-          final requiredWins = (match.sets / 2).ceil();
-          final matchCompleted =
-              team1Wins >= requiredWins || team2Wins >= requiredWins;
+          final team1IsLeading = team1Wins > team2Wins;
+          final team2IsLeading = team2Wins > team1Wins;
+
+          // Get current set scores
+          String team1CurrentScore = "0";
+          String team2CurrentScore = "0";
+
+          if (currentSet > 0 && match.scores.isNotEmpty) {
+            final currentSetIndex = currentSet - 1;
+            if (currentSetIndex < match.scores.length) {
+              team1CurrentScore = "${match.scores[currentSetIndex][0]}";
+              team2CurrentScore = "${match.scores[currentSetIndex][1]}";
+            }
+          }
 
           return Container(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
@@ -93,27 +103,37 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // SizedBox(height: screenHeight * 0.005),
-                    if (matchCompleted)
-                      _buildMatchResult(
-                        screenHeight,
-                        screenWidth,
-                        team1IsWinner ? match.team1Name : match.team2Name,
-                      ),
-
                     _buildMatchInfoCard(
                       screenHeight,
                       screenWidth,
                       match,
                       match.sport.toLowerCase() == 'badminton',
-                      team1IsWinner,
-                      team2IsWinner,
+                      team1IsLeading,
+                      team2IsLeading,
                     ),
 
-                    SizedBox(height: screenHeight * 0.01),
+                    SizedBox(height: screenHeight * 0.02),
 
-                    // Show all sets
-                    _buildSetHistory(screenHeight, screenWidth, match.scores),
+                    // Live scores boxes
+                    _buildLiveScoreSection(
+                      screenHeight,
+                      screenWidth,
+                      team1CurrentScore,
+                      team2CurrentScore,
+                      currentSet,
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Set history for completed sets
+                    if (match.scores.isNotEmpty)
+                      _buildSetHistory(
+                        screenHeight,
+                        screenWidth,
+                        currentSet,
+
+                        match.scores.sublist(0, match.currentSetIndex),
+                      ),
 
                     SizedBox(height: screenHeight * 0.02),
                   ],
@@ -131,15 +151,11 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     double screenWidth,
     MatchModel match,
     bool isBadminton,
-    bool team1IsWinner,
-    bool team2IsWinner,
+    bool team1IsLeading,
+    bool team2IsLeading,
   ) {
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.02,
-        // vertical: screenHeight * 0.015,
-      ),
-
+      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
       padding: EdgeInsets.only(bottom: screenHeight * 0.015),
       decoration: BoxDecoration(
         color:
@@ -271,14 +287,14 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                     : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
                 screenWidth,
                 isBadminton,
-                team1IsWinner,
+                team1IsLeading,
               ),
               Text(
                 "vs",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: screenWidth * 0.06,
-                  color: AppColors.white,
+                  color: isBadminton ? AppColors.white : AppColors.black,
                 ),
               ),
               _buildTeamBox(
@@ -288,7 +304,7 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                     : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
                 screenWidth,
                 isBadminton,
-                team2IsWinner,
+                team2IsLeading,
               ),
             ],
           ),
@@ -302,15 +318,15 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     String player,
     double width,
     bool isBadminton,
-    bool isWinner,
+    bool isLeading,
   ) {
     final screenWidth = ScreenSize.screenWidth(context);
     final screenHeight = ScreenSize.screenHeight(context);
 
-    // Colors for winner and loser
-    final winnerColor = Colors.green.shade600;
-    final loserColor = Colors.red.shade600;
-    final textColor = isWinner ? winnerColor : loserColor;
+    // Colors for leading and trailing teams
+    final leadingColor = Colors.green.shade600;
+    final trailingColor = Colors.red.shade600;
+    final textColor = isLeading ? leadingColor : trailingColor;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -331,7 +347,7 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
             vertical: screenHeight * 0.01,
           ),
           decoration: BoxDecoration(
-            color: isWinner ? winnerColor : loserColor,
+            color: isLeading ? leadingColor : trailingColor,
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
@@ -343,55 +359,80 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     );
   }
 
-  Widget _buildMatchResult(double height, double width, String winnerName) {
-    return SizedBox(
-      height: height * 0.27,
-      width: width * 1,
-
-      // margin: EdgeInsets.symmetric(horizontal: width * 0.05),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/winner_trophy.png',
-                scale: 4,
-                fit: BoxFit.contain,
+  Widget _buildLiveScoreSection(
+    double height,
+    double width,
+    String team1Score,
+    String team2Score,
+    int currentSet,
+  ) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: width * 0.05,
+                vertical: height * 0.01,
               ),
-
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      "MATCH WINNER",
-                      style: TextStyle(
-                        fontSize: width * 0.06,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber.shade900,
-                      ),
-                    ),
-                    Text(
-                      "Team $winnerName",
-                      style: TextStyle(
-                        fontSize: width * 0.06,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade700,
-                      ),
-                    ),
-                  ],
+              decoration: BoxDecoration(
+                color: AppColors.black,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                "CURRENT SET: $currentSet",
+                style: TextStyle(
+                  color: AppColors.amber,
+                  fontWeight: FontWeight.bold,
+                  fontSize: width * 0.05,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+        SizedBox(height: height * 0.02),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildScoreBox(team1Score, width),
+            _buildScoreBox(team2Score, width),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoreBox(String score, double width) {
+    debugPrint(score);
+    return Container(
+      width: width * 0.28,
+      height: width * 0.3,
+      decoration: BoxDecoration(
+        color: AppColors.yelllow,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.black,
+            blurRadius: 4,
+            offset: Offset(2, 2),
           ),
         ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        score,
+        style: TextStyle(fontSize: width * 0.15, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildSetHistory(double height, double width, List<List<int>> scores) {
+  Widget _buildSetHistory(
+    double height,
+    double width,
+    int currentSet,
+    List<List<int>> scores,
+  ) {
     // Safety check to make sure we have scores to display
     if (scores.isEmpty) {
       return const SizedBox.shrink(); // Return empty widget if no scores
@@ -405,7 +446,7 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
             vertical: height * 0.01,
           ),
           child: Text(
-            "SET RESULTS",
+            "COMPLETED SETS",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: width * 0.05,
@@ -414,11 +455,12 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
           ),
         ),
         ...List.generate(scores.length, (index) {
-          // Safety check to ensure we don't go out of bounds
+          // If this is the current set and it's not completed, don't show it
           if (index >= scores.length || scores[index].length < 2) {
             return const SizedBox.shrink(); // Skip if out of bounds
           }
 
+          // Determine which team won the set for coloring
           final team1WonSet = scores[index][0] > scores[index][1];
           final team2WonSet = scores[index][1] > scores[index][0];
 
