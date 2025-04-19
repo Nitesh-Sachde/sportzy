@@ -12,6 +12,7 @@ import 'package:sportzy/features/create_match/widgets/points_selector.dart';
 import 'package:sportzy/features/create_match/widgets/set_selector.dart';
 import 'package:sportzy/features/create_match/widgets/sport_selector.dart';
 import 'package:sportzy/features/create_match/widgets/player_card.dart';
+import 'package:sportzy/features/create_match/widgets/team_name_field.dart';
 import 'package:sportzy/features/my_matches/provider/match_provider.dart';
 import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
@@ -61,6 +62,7 @@ class CreateMatchScreen extends ConsumerWidget {
           ),
         ),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
           padding: EdgeInsets.symmetric(
             horizontal: screenWidth * 0.06,
             vertical: screenHeight * 0.02,
@@ -86,22 +88,14 @@ class CreateMatchScreen extends ConsumerWidget {
               SizedBox(height: screenHeight * 0.025),
 
               // Team 1 Input Section
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter Team 1 Name',
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.018,
-                    horizontal: screenWidth * 0.04,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
+              TeamNameField(
+                hintText: 'Enter Team 1 Name',
                 onChanged:
                     (val) => ref
                         .read(matchFormProvider.notifier)
                         .updateTeamName(1, val.trim()),
               ),
+
               SizedBox(height: screenHeight * 0.015),
               ...team1Players.map(
                 (player) => PlayerCard(
@@ -121,22 +115,14 @@ class CreateMatchScreen extends ConsumerWidget {
               SizedBox(height: screenHeight * 0.025),
 
               // Team 2 Input Section
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter Team 2 Name',
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.018,
-                    horizontal: screenWidth * 0.04,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
+              TeamNameField(
+                hintText: 'Enter Team 2 Name',
                 onChanged:
                     (val) => ref
                         .read(matchFormProvider.notifier)
                         .updateTeamName(2, val.trim()),
               ),
+
               SizedBox(height: screenHeight * 0.015),
               ...team2Players.map(
                 (player) => PlayerCard(
@@ -228,9 +214,6 @@ class CreateMatchScreen extends ConsumerWidget {
 
                       final success = await matchService.createMatch(match);
 
-                      // Close loading dialog
-                      Navigator.of(context).pop();
-
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -251,7 +234,7 @@ class CreateMatchScreen extends ConsumerWidget {
                         ref
                             .read(teamPlayersProvider(2).notifier)
                             .clearPlayers();
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder:

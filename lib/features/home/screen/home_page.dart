@@ -18,7 +18,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   final List<Widget> _screens = [
     const MyMatchesScreen(), // Replace with your Matches/History screen
-    const Home(), // Home screen content
+    const Dashboard(), // Home screen content
     const Placeholder(), // Settings/Profile screen
   ];
 
@@ -29,8 +29,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     double screenHeight = ScreenSize.screenHeight(context);
     return Scaffold(
       body: _screens[_selectedIndex],
-
-      // 🔻 Bottom Nav Bar
       bottomNavigationBar: Container(
         color: AppColors.white,
         padding: EdgeInsets.symmetric(

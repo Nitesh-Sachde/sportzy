@@ -4,6 +4,7 @@ import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
 import 'package:sportzy/features/scorecard/screen/score_entry_screen.dart';
 
 class MatchCard extends ConsumerWidget {
@@ -17,12 +18,20 @@ class MatchCard extends ConsumerWidget {
     final dateFormatter = DateFormat('dd MMM yyyy • hh:mm a');
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ScoreEntryScreen(matchId: match.matchId),
-          ),
-        );
+        match.status == 'live'
+            ? Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ScoreEntryScreen(matchId: match.matchId),
+              ),
+            )
+            : Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => PastMatchScoreCard(matchId: match.matchId),
+              ),
+            );
       },
 
       child: Container(

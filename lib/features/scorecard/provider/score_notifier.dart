@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sportzy/features/scorecard/provider/match_provider_to_scorecard.dart';
+import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
 
 final scoreNotifierProvider =
     StateNotifierProvider.family<ScoreNotifier, List<List<int>>, String>((
@@ -29,13 +29,11 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
     if (_matchCompleted || teamIndex < 0 || teamIndex > 1) return;
 
     final updatedState = [...state];
-
     updatedState[_currentSetIndex][teamIndex]++;
 
     final team1 = updatedState[_currentSetIndex][0];
     final team2 = updatedState[_currentSetIndex][1];
 
-    // Check deuce logic and win condition
     if ((team1 >= maxPoints || team2 >= maxPoints) &&
         (team1 - team2).abs() >= 2) {
       final winner = team1 > team2 ? 0 : 1;
@@ -43,8 +41,9 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
         context,
         "Set ${_currentSetIndex + 1} won by Team ${winner + 1}",
       );
-      _currentSetIndex = _currentSetIndex + 1;
-      // Check how many sets each team has won
+
+      _currentSetIndex++;
+
       int team1Wins = 0;
       int team2Wins = 0;
       for (var s in updatedState) {
@@ -55,17 +54,25 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
       }
 
       final requiredWins = (totalSets / 2).ceil();
-      if (team1Wins >= requiredWins || team2Wins >= requiredWins) {
+      if (team1Wins == requiredWins || team2Wins == requiredWins) {
         _matchCompleted = true;
         final winningTeamName = team1Wins > team2Wins ? 'Team 1' : 'Team 2';
 
         _showSnackBar(context, "🎉 $winningTeamName won the match!");
 
         // 🔥 Update match status in Firebase
-        FirebaseFirestore.instance
-            .collection("matches")
-            .doc(matchId) // you'll need to pass matchId in ScoreNotifier too
-            .update({"status": "completed"});
+        FirebaseFirestore.instance.collection("matches").doc(matchId).update({
+          "status": "completed",
+        });
+
+        // 🧭 Redirect to PastMatchScoreCard
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PastMatchScoreCard(matchId: matchId),
+          ),
+        );
       }
     }
 

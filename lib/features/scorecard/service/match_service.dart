@@ -5,6 +5,7 @@ import 'dart:core'; // Ensure dart:core is imported for Map type hint
 class MatchService {
   static Future<void> updateMatchScores({
     required String matchId,
+    required int currentSetIndex,
     required List<List<int>> scores,
   }) async {
     final Map<String, List<int>> scoresMap = {
@@ -13,7 +14,7 @@ class MatchService {
 
     await FirebaseFirestore.instance.collection('matches').doc(matchId).update({
       'scoresMap': scoresMap,
-      'currentSetIndex': scores.length - 1,
+      'currentSetIndex': currentSetIndex,
     });
   }
 

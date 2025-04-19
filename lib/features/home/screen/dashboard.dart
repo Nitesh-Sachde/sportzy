@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/home/controller/home_controller.dart';
+import 'package:sportzy/features/home/provider/match_data_provider.dart';
 import 'package:sportzy/features/home/widgets/match_cards.dart';
 
-class Home extends ConsumerStatefulWidget {
-  const Home({super.key});
+class Dashboard extends ConsumerStatefulWidget {
+  const Dashboard({super.key});
 
   @override
-  ConsumerState<Home> createState() => _HomeState();
+  ConsumerState<Dashboard> createState() => _DashboardState();
 }
 
-class _HomeState extends ConsumerState<Home> {
+class _DashboardState extends ConsumerState<Dashboard> {
   String userId = '';
   String name = '';
 
@@ -23,7 +24,7 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   Future<void> _loadUserDetails() async {
-    final details = await HomeController().fetchUserDetails();
+    final details = await DashboardController().fetchUserDetails();
     setState(() {
       name = details['name']!;
       userId = details['userId']!;
@@ -97,28 +98,19 @@ class _HomeState extends ConsumerState<Home> {
   Widget _buildScrollableSection(double screenWidth, double screenHeight) {
     return Container(
       width: double.infinity,
+
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildMatchSection(
-              "Live Matches",
-              const LiveMatchCard(),
-              screenWidth,
-              screenHeight,
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            _buildMatchSection(
-              "Past Matches",
-              const PastMatchCard(),
-              screenWidth,
-              screenHeight,
-            ),
+            _buildMatchSection("Live Matches", screenWidth, screenHeight),
+            SizedBox(height: screenHeight * 0.01),
+            _buildMatchSection("Past Matches", screenWidth, screenHeight),
           ],
         ),
       ),
@@ -127,7 +119,6 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget _buildMatchSection(
     String title,
-    Widget card,
     double screenWidth,
     double screenHeight,
   ) {
@@ -142,7 +133,6 @@ class _HomeState extends ConsumerState<Home> {
               fontSize: screenHeight * 0.025,
               fontWeight: FontWeight.bold,
               color: title == "Live Matches" ? Colors.red : Colors.black87,
-
               shadows: [
                 Shadow(
                   blurRadius: 10,
@@ -156,19 +146,52 @@ class _HomeState extends ConsumerState<Home> {
         SizedBox(height: screenHeight * 0.01),
         SizedBox(
           height: screenHeight * 0.32,
-          child: PageView.builder(
-            controller: PageController(
-              viewportFraction: 0.94, // So that a bit of next/prev card peeks
-            ),
-            itemCount: 5, // Replace with your list length
-            itemBuilder: (context, index) {
-              return title == "Live Matches"
-                  ? LiveMatchCard()
-                  : PastMatchCard(); // Or PastMatchCard based on screen
-            },
-          ),
+          child:
+              title == "Live Matches"
+                  ? _buildLiveMatches(screenWidth)
+                  : _buildPastMatches(screenWidth),
         ),
       ],
+    );
+  }
+
+  Widget _buildLiveMatches(double screenWidth) {
+    final liveMatchesAsync = ref.watch(liveMatchesProvider);
+
+    return liveMatchesAsync.when(
+      data: (matches) {
+        if (matches.isEmpty) {
+          return Center(child: Text('No live matches available'));
+        }
+
+        return PageView.builder(
+          controller: PageController(viewportFraction: 0.93),
+          itemCount: matches.length,
+          itemBuilder: (context, index) => LiveMatchCard(match: matches[index]),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error loading matches')),
+    );
+  }
+
+  Widget _buildPastMatches(double screenWidth) {
+    final pastMatchesAsync = ref.watch(pastMatchesProvider);
+
+    return pastMatchesAsync.when(
+      data: (matches) {
+        if (matches.isEmpty) {
+          return Center(child: Text('No past matches available'));
+        }
+
+        return PageView.builder(
+          controller: PageController(viewportFraction: 0.93),
+          itemCount: matches.length,
+          itemBuilder: (context, index) => PastMatchCard(match: matches[index]),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text('Error loading matches')),
     );
   }
 }
