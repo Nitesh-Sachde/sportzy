@@ -286,8 +286,31 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
               _buildTeamBox(
                 match.team1Name,
                 match.mode == 'singles'
-                    ? match.team1PlayerName[0]
-                    : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
+                    ? Text(
+                      match.team1PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team1PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team1PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 isBadminton,
                 team1IsLeading,
@@ -303,8 +326,31 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
               _buildTeamBox(
                 match.team2Name,
                 match.mode == 'singles'
-                    ? match.team2PlayerName[0]
-                    : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
+                    ? Text(
+                      match.team2PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team2PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team2PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 isBadminton,
                 team2IsLeading,
@@ -318,7 +364,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
 
   Widget _buildTeamBox(
     String team,
-    String player,
+    Widget playerWidget,
     double width,
     bool isBadminton,
     bool isLeading,
@@ -338,7 +384,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
         Text(
           team,
           style: TextStyle(
-            color: textColor,
+            color: isBadminton ? AppColors.white : AppColors.bTeamNametext,
             fontWeight: FontWeight.w600,
             fontSize: screenWidth * 0.06,
           ),
@@ -351,12 +397,10 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
           ),
           decoration: BoxDecoration(
             color: isLeading ? leadingColor : trailingColor,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            player,
-            style: TextStyle(color: Colors.white, fontSize: screenWidth * 0.04),
-          ),
+
+          child: playerWidget,
         ),
       ],
     );

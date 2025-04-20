@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../model/match_model.dart';
 
@@ -62,7 +63,7 @@ class MatchService {
       ...generateKeywords(team2Name),
       ...generateKeywords(location),
     ];
-
+    final currentUser = FirebaseAuth.instance.currentUser;
     return MatchModel(
       matchId: matchId,
       sport: sport,
@@ -78,6 +79,7 @@ class MatchService {
       location: location,
       status: 'upcoming',
       createdAt: DateTime.now(),
+      createdBy: currentUser!.uid,
       keywords: keywords.toSet().toList(),
       scores: List.generate(sets, (_) => [0, 0]),
       currentSetIndex: 0,

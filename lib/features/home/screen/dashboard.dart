@@ -98,7 +98,6 @@ class _DashboardState extends ConsumerState<Dashboard> {
   Widget _buildScrollableSection(double screenWidth, double screenHeight) {
     return Container(
       width: double.infinity,
-
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
@@ -106,6 +105,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildMatchSection("Live Matches", screenWidth, screenHeight),
@@ -123,6 +123,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
     double screenHeight,
   ) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -145,7 +146,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
         ),
         SizedBox(height: screenHeight * 0.01),
         SizedBox(
-          height: screenHeight * 0.32,
+          height: screenHeight * 0.35,
           child:
               title == "Live Matches"
                   ? _buildLiveMatches(screenWidth)

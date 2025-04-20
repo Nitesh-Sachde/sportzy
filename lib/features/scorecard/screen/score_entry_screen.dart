@@ -384,8 +384,31 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
               _buildTeamBox(
                 match.team1Name,
                 match.mode == 'singles'
-                    ? match.team1PlayerName[0]
-                    : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
+                    ? Text(
+                      match.team1PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team1PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team1PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 match.sport.toLowerCase() == 'badminton',
               ),
@@ -400,8 +423,31 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
               _buildTeamBox(
                 match.team2Name,
                 match.mode == 'singles'
-                    ? match.team2PlayerName[0]
-                    : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
+                    ? Text(
+                      match.team2PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team2PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team2PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 match.sport.toLowerCase() == 'badminton',
               ),
@@ -414,7 +460,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
 
   Widget _buildTeamBox(
     String team,
-    String player,
+    Widget playerWidget,
     double width,
     bool isBadminton,
   ) {
@@ -427,7 +473,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
         Text(
           team,
           style: TextStyle(
-            color: isBadminton ? AppColors.white : AppColors.ttTeamWonBG,
+            color: isBadminton ? AppColors.white : AppColors.bTeamNametext,
             fontWeight: FontWeight.w600,
             fontSize: screenWidth * 0.06,
           ),
@@ -439,17 +485,10 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
             vertical: screenHeight * 0.01,
           ),
           decoration: BoxDecoration(
-            color:
-                isBadminton ? AppColors.bTeamBarBackground : AppColors.primary,
-            borderRadius: BorderRadius.circular(30),
+            color: AppColors.bTeamBarBackground,
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            player,
-            style: TextStyle(
-              color: isBadminton ? AppColors.bTeamNametext : AppColors.white,
-              fontSize: screenWidth * 0.04,
-            ),
-          ),
+          child: playerWidget,
         ),
       ],
     );

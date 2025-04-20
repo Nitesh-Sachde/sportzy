@@ -15,6 +15,7 @@ class MatchModel {
   final String location;
   final String status;
   final DateTime createdAt;
+  final String createdBy;
   final List<String> keywords;
   final List<List<int>> scores;
   final int currentSetIndex;
@@ -34,6 +35,7 @@ class MatchModel {
     required this.location,
     required this.status,
     required this.createdAt,
+    required this.createdBy,
     required this.keywords,
     required this.scores,
     required this.currentSetIndex,
@@ -59,6 +61,7 @@ class MatchModel {
       'location': location,
       'status': status,
       'createdAt': Timestamp.fromDate(createdAt),
+      'createdBy': createdBy,
       'keywords': keywords,
       'scoresMap': scoresMap, // 👈 Save as map
       'currentSetIndex': currentSetIndex,
@@ -104,6 +107,7 @@ class MatchModel {
       location: map['location'] ?? '',
       status: map['status'] ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdBy: (map['createdby'] ?? ''),
       keywords: List<String>.from(map['keywords'] ?? []),
       scores: scoresList,
       currentSetIndex: map['currentSetIndex'] ?? 0,

@@ -267,8 +267,31 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
               _buildTeamBox(
                 match.team1Name,
                 match.mode == 'singles'
-                    ? match.team1PlayerName[0]
-                    : "${match.team1PlayerName[0]} & ${match.team1PlayerName[1]}",
+                    ? Text(
+                      match.team1PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team1PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team1PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 isBadminton,
                 team1IsWinner,
@@ -278,14 +301,37 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: screenWidth * 0.06,
-                  color: AppColors.white,
+                  color: isBadminton ? AppColors.white : AppColors.black,
                 ),
               ),
               _buildTeamBox(
                 match.team2Name,
                 match.mode == 'singles'
-                    ? match.team2PlayerName[0]
-                    : "${match.team2PlayerName[0]} & ${match.team2PlayerName[1]}",
+                    ? Text(
+                      match.team2PlayerName[0],
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        Text(
+                          match.team2PlayerName[0],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          match.team2PlayerName[1],
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 screenWidth,
                 isBadminton,
                 team2IsWinner,
@@ -299,7 +345,7 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
 
   Widget _buildTeamBox(
     String team,
-    String player,
+    Widget playerWidget,
     double width,
     bool isBadminton,
     bool isWinner,
@@ -319,7 +365,7 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
         Text(
           team,
           style: TextStyle(
-            color: textColor,
+            color: isBadminton ? AppColors.white : AppColors.bTeamNametext,
             fontWeight: FontWeight.w600,
             fontSize: screenWidth * 0.06,
           ),
@@ -332,12 +378,9 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
           ),
           decoration: BoxDecoration(
             color: isWinner ? winnerColor : loserColor,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            player,
-            style: TextStyle(color: Colors.white, fontSize: screenWidth * 0.04),
-          ),
+          child: playerWidget,
         ),
       ],
     );

@@ -38,48 +38,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context) {
-    final TextEditingController passwordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text("Confirm Deletion"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Please enter your password to delete your account:",
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Password',
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text("Cancel"),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  _deleteAccountAndNavigate(context, passwordController.text);
-                },
-                child: const Text("Delete"),
-              ),
-            ],
-          ),
-    );
-  }
-
   Future<void> _deleteAccountAndNavigate(
     BuildContext context,
     String password,
@@ -96,16 +54,43 @@ class _UserProfilePageState extends State<UserProfilePage> {
         password: password,
       );
 
+      // Step 1: Re-authenticate
       await user.reauthenticateWithCredential(cred);
+
+      // Step 2: Delete user matches (where this user is the creator)
+      final matchQuery =
+          await FirebaseFirestore.instance
+              .collection('matches')
+              .where('createdBy', isEqualTo: user.uid)
+              .get();
+
+      for (final doc in matchQuery.docs) {
+        await doc.reference.delete();
+      }
+
+      // Step 3: Delete statistics document (if it exists)
+      await FirebaseFirestore.instance
+          .collection('stats')
+          .doc(user.uid)
+          .delete()
+          .catchError((_) {
+            // If stats doc doesn't exist, ignore
+          });
+
+      // Step 4: Delete user profile document
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .delete();
+
+      // Step 5: Delete auth account
       await user.delete();
 
-      Navigator.pushReplacement(
+      // Step 6: Navigate to SignInPage
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const SignInPage()),
+        (route) => false,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -234,12 +219,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 buildProfileOption(
                   context,
                   "Change Password",
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ForgotPasswordPage(),
-                    ),
-                  ),
+                  () => _showChangePasswordDialog(context),
                 ),
                 buildProfileOption(
                   context,
@@ -269,9 +249,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 SizedBox(height: screenHeight * 0.04),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      FirebaseAuth.instance.signOut();
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignInPage()),
+                        (route) => false,
+                      );
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
@@ -320,6 +306,131 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
         const Divider(height: 1),
       ],
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text("Change Password"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: currentController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Current Password',
+                  ),
+                ),
+                TextField(
+                  controller: newController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'New Password'),
+                ),
+                TextField(
+                  controller: confirmController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm New Password',
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final current = currentController.text.trim();
+                  final newPass = newController.text.trim();
+                  final confirm = confirmController.text.trim();
+
+                  if (newPass != confirm) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Passwords don't match")),
+                    );
+                    return;
+                  }
+
+                  try {
+                    final user = FirebaseAuth.instance.currentUser!;
+                    final cred = EmailAuthProvider.credential(
+                      email: user.email!,
+                      password: current,
+                    );
+
+                    await user.reauthenticateWithCredential(cred);
+                    await user.updatePassword(newPass);
+
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Password changed successfully"),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error: ${e.toString()}")),
+                    );
+                  }
+                },
+                child: const Text("Update"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text("Delete Account"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "This will permanently delete your account and all match history/data. "
+                  "Please enter your password to confirm.",
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Password',
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  _deleteAccountAndNavigate(context, passwordController.text);
+                },
+                child: const Text("Delete"),
+              ),
+            ],
+          ),
     );
   }
 }

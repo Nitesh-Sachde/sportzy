@@ -20,11 +20,11 @@ class AuthWrapper extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user == null) {
-          return const SignInPage(); // ❌ Not signed in
+          return const SignInPage(); //  Not signed in
         }
 
         if (user.emailVerified) {
-          return const HomePage(); // ✅ Signed in & verified
+          return const HomePage(); //  Signed in & verified
         }
 
         // 🟡 Not verified

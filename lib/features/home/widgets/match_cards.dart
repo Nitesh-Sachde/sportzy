@@ -204,20 +204,18 @@ class LiveMatchCard extends ConsumerWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.center,
-                child: ScoreBox(
-                  score: '${currentScores[1]}',
-                  playerName1:
-                      match.team2PlayerName.isNotEmpty
-                          ? match.team2PlayerName[0]
-                          : '',
-                  playerName2:
-                      isDoubles && match.team2PlayerName.length > 1
-                          ? match.team2PlayerName[1]
-                          : null,
-                ),
+            Align(
+              alignment: Alignment.center,
+              child: ScoreBox(
+                score: '${currentScores[1]}',
+                playerName1:
+                    match.team2PlayerName.isNotEmpty
+                        ? match.team2PlayerName[0]
+                        : '',
+                playerName2:
+                    isDoubles && match.team2PlayerName.length > 1
+                        ? match.team2PlayerName[1]
+                        : null,
               ),
             ),
           ],
@@ -509,6 +507,7 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
             : widget.match.team2PlayerName.join(', ');
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -646,7 +645,7 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
             : widget.match.team2PlayerName.join(', ');
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Row(
