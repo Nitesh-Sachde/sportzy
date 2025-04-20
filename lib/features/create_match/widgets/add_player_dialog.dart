@@ -33,7 +33,7 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
     final team1 = ref.read(teamPlayersProvider(1));
     final team2 = ref.read(teamPlayersProvider(2));
     final allSelected = [...team1, ...team2];
-
+    if (!mounted) return;
     setState(() {
       hasSearched = true;
       searchResults = results.where((p) => !allSelected.contains(p)).toList();
@@ -41,6 +41,7 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
   }
 
   void toggleSelect(Player player) {
+    if (!mounted) return;
     setState(() {
       if (selectedPlayers.contains(player)) {
         selectedPlayers.remove(player);
@@ -80,6 +81,7 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Enter name or ID',
+
                   prefixIcon: const Icon(Icons.search),
                   contentPadding: EdgeInsets.symmetric(
                     vertical: height * 0.018,
@@ -107,9 +109,9 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
                       'No results found',
                       style: TextStyle(fontSize: height * 0.018),
                     )
-                    : SizedBox(
-                      height: listHeight,
+                    : Flexible(
                       child: ListView.builder(
+                        shrinkWrap: true,
                         itemCount: searchResults.length,
                         itemBuilder: (_, index) {
                           final player = searchResults[index];

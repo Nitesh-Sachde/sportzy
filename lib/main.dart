@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sportzy/router/auth_wrapper.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,13 @@ void main() async {
       await FirebaseDynamicLinks.instance.getInitialLink();
 
   final Uri? deepLink = initialLink?.link;
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Request permission
+  await messaging.requestPermission();
+
+  // Get the token
+  String? token = await messaging.getToken();
 
   runApp(const ProviderScope(child: SportzyApp()));
 }

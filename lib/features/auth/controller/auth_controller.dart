@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:sportzy/features/home/screen/home_page.dart';
 import 'package:sportzy/features/auth/screen/sign_up_page.dart';
@@ -37,6 +38,18 @@ Future<void> signIn({
         MaterialPageRoute(builder: (_) => const VerificationLinkSentPage()),
       );
     } else {
+      Future<void> saveUserFcmToken() async {
+        final user = FirebaseAuth.instance.currentUser;
+        final token = await FirebaseMessaging.instance.getToken();
+
+        if (user != null && token != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({'fcmToken': token});
+        }
+      }
+
       // Verified user → HomePage
       Navigator.pushReplacement(
         context,
@@ -89,6 +102,18 @@ Future<User?> signUp({
       context,
       MaterialPageRoute(builder: (_) => const VerificationLinkSentPage()),
     );
+    Future<void> saveUserFcmToken() async {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await FirebaseMessaging.instance.getToken();
+
+      if (user != null && token != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'fcmToken': token});
+      }
+    }
+
     return user;
   } on FirebaseAuthException catch (e) {
     ScaffoldMessenger.of(
