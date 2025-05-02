@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -32,7 +33,7 @@ class LiveMatchCard extends ConsumerWidget {
           ),
       child: Container(
         margin: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.012,
+          horizontal: screenWidth * 0.015,
           vertical: screenHeight * 0.01,
         ),
         width: screenWidth * 0.9,
@@ -44,7 +45,7 @@ class LiveMatchCard extends ConsumerWidget {
             BoxShadow(
               color: AppColors.black,
               offset: Offset(2, 2),
-              blurRadius: 4,
+              blurRadius: 3,
             ),
           ],
         ),
@@ -449,7 +450,7 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
           ),
       child: Container(
         margin: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.012,
+          horizontal: screenWidth * 0.015,
           vertical: screenHeight * 0.01,
         ),
         width: screenWidth * 0.9,
@@ -461,7 +462,7 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
             BoxShadow(
               color: AppColors.black,
               offset: Offset(2, 2),
-              blurRadius: 4,
+              blurRadius: 3,
             ),
           ],
         ),
@@ -534,25 +535,37 @@ class _PastMatchCardState extends ConsumerState<PastMatchCard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(Icons.location_on_outlined, color: AppColors.white),
-                Text(
-                  widget.match.location,
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: screenWidth * 0.04,
+            Flexible(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(Icons.location_on_outlined, color: AppColors.white),
+                  Flexible(
+                    child: AutoSizeText(
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      widget.match.location,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: screenWidth * 0.04,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
-            Text(
-              DateFormat("MMMM d, yyyy h:mm a").format(widget.match.createdAt),
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: screenWidth * 0.035,
+            Flexible(
+              child: AutoSizeText(
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                DateFormat(
+                  "MMMM d, yyyy h:mm a",
+                ).format(widget.match.createdAt),
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: screenWidth * 0.035,
+                ),
               ),
             ),
           ],
