@@ -36,6 +36,10 @@ class AuthRepository {
         'keywords': generateSearchKeywords(name.trim(), user.uid),
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Initialize statistics
+      await initializePlayerStatistics(user.uid);
+
       await userCredential.user!.sendEmailVerification();
 
       // Navigate to verification screen
@@ -62,6 +66,44 @@ class AuthRepository {
       );
     }
     return null;
+  }
+
+  Future<void> initializePlayerStatistics(String userId) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    final overallStatsRef = FirebaseFirestore.instance
+        .collection('player_stats')
+        .doc(userId)
+        .collection('overall')
+        .doc('stats');
+
+    batch.set(overallStatsRef, {
+      'totalMatchesPlayed': 0,
+      'totalMatchesWon': 0,
+      'winPercentage': 0.0,
+    });
+
+    final badmintonStatsRef = FirebaseFirestore.instance
+        .collection('player_stats')
+        .doc(userId)
+        .collection('sports')
+        .doc('badminton');
+
+    batch.set(badmintonStatsRef, {'played': 0, 'won': 0, 'winPercentage': 0.0});
+
+    final tableTennisStatsRef = FirebaseFirestore.instance
+        .collection('player_stats')
+        .doc(userId)
+        .collection('sports')
+        .doc('table_tennis');
+
+    batch.set(tableTennisStatsRef, {
+      'played': 0,
+      'won': 0,
+      'winPercentage': 0.0,
+    });
+
+    await batch.commit();
   }
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();

@@ -79,17 +79,38 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
         data: (match) {
           if (!_initialized) {
             Future.microtask(() {
-              // Initialize with default score if match.scores is empty
-              final matchScores = match.scores;
-              scoreNotifier.loadExistingScores(
-                List<List<int>>.from(
-                  matchScores.map<List<int>>((s) => List<int>.from(s)),
-                ),
+              final scoreNotifier = ref.read(
+                scoreNotifierProvider(widget.matchId).notifier,
               );
+
+              // Check if match.scores exists and is not empty
+              if (match.scores.isNotEmpty) {
+                scoreNotifier.loadExistingScores(
+                  List<List<int>>.from(
+                    match.scores.map<List<int>>((s) => List<int>.from(s)),
+                  ),
+                );
+              } else {
+                // Initialize with default empty scores for each set
+                final defaultScores = List.generate(match.sets, (_) => [0, 0]);
+                scoreNotifier.loadExistingScores(defaultScores);
+              }
+
               setState(() {
                 _initialized = true;
               });
             });
+
+            // Show a loading indicator until initialization is complete
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
+          // Always check scores before using them
+          final scores = match.scores;
+          if (scores.isEmpty) {
+            return const Center(child: Text("Initializing match scores..."));
           }
 
           return Container(

@@ -72,22 +72,32 @@ class MatchModel {
     final Map<String, dynamic> scoresMap = Map<String, dynamic>.from(
       map['scoresMap'] ?? {},
     );
-    final List<List<int>> scoresList = [];
 
-    // Convert map to ordered list of sets
-    final sortedKeys =
-        scoresMap.keys.toList()..sort(
-          (a, b) =>
-              int.parse(a.split('_')[1]).compareTo(int.parse(b.split('_')[1])),
-        );
+    List<List<int>> scoresList = [];
 
-    for (final key in sortedKeys) {
-      final value = scoresMap[key];
-      if (value is List && value.length == 2) {
-        scoresList.add([value[0] as int, value[1] as int]);
+    // Handle empty scores case
+    if (scoresMap.isEmpty) {
+      // Initialize with default scores based on sets
+      final sets = map['sets'] ?? 3;
+      scoresList = List.generate(sets, (_) => [0, 0]);
+    } else {
+      // Convert map to ordered list of sets
+      final sortedKeys =
+          scoresMap.keys.toList()..sort(
+            (a, b) => int.parse(
+              a.split('_')[1],
+            ).compareTo(int.parse(b.split('_')[1])),
+          );
+
+      for (final key in sortedKeys) {
+        final value = scoresMap[key];
+        if (value is List && value.length == 2) {
+          scoresList.add([value[0] as int, value[1] as int]);
+        }
       }
     }
 
+    // Always ensure we have at least one set
     if (scoresList.isEmpty) {
       scoresList.add([0, 0]);
     }

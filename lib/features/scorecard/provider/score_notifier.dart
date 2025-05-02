@@ -2,7 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
+import 'package:sportzy/features/playerprofile/service/statistics_service.dart';
+import 'package:sportzy/features/create_match/model/match_model.dart';
 
+// Update this provider
 final scoreNotifierProvider =
     StateNotifierProvider.family<ScoreNotifier, List<List<int>>, String>((
       ref,
@@ -13,7 +16,13 @@ final scoreNotifierProvider =
 
 class ScoreNotifier extends StateNotifier<List<List<int>>> {
   final String matchId;
-  ScoreNotifier({required this.matchId}) : super([[]]);
+
+  // Initialize with a non-empty list to avoid range errors
+  ScoreNotifier({required this.matchId})
+    : super([
+        [0, 0],
+      ]);
+
   int _currentSetIndex = 0;
   bool _matchCompleted = false;
   bool _inDeuce = false;
@@ -27,7 +36,7 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
     int maxPoints,
     int totalSets,
     BuildContext context,
-  ) {
+  ) async {
     if (_matchCompleted || teamIndex < 0 || teamIndex > 1) return;
 
     final updatedState = [...state];
@@ -70,23 +79,67 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
       final requiredWins = (totalSets / 2).ceil();
       if (team1Wins == requiredWins || team2Wins == requiredWins) {
         _matchCompleted = true;
-        final winningTeamName = team1Wins > team2Wins ? 'Team 1' : 'Team 2';
+        final winningTeamIndex = team1Wins > team2Wins ? 0 : 1;
+        final winningTeamName = winningTeamIndex == 0 ? 'Team 1' : 'Team 2';
 
-        _showSnackBar(context, "🎉 $winningTeamName won the match!");
+        // Add a better try-catch with more specific error messages
+        try {
+          // Get the winning player IDs
+          final List<String> winnerPlayerIds = await _fetchTeamPlayerIds(
+            matchId,
+            winningTeamIndex == 0,
+          );
 
-        // 🔥 Update match status in Firebase
-        FirebaseFirestore.instance.collection("matches").doc(matchId).update({
-          "status": "completed",
-        });
+          // Update match status in Firebase
+          await FirebaseFirestore.instance
+              .collection("matches")
+              .doc(matchId)
+              .update({
+                "status": "completed",
+                "winner": winningTeamIndex == 0 ? "team1" : "team2",
+                "completedAt": FieldValue.serverTimestamp(),
+              });
 
-        // 🧭 Redirect to PastMatchScoreCard
+          // Get match data for statistics update
+          final matchDoc =
+              await FirebaseFirestore.instance
+                  .collection("matches")
+                  .doc(matchId)
+                  .get();
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PastMatchScoreCard(matchId: matchId),
-          ),
-        );
+          if (!matchDoc.exists || matchDoc.data() == null) {
+            throw Exception("Match document not found");
+          }
+
+          // Update statistics
+          final statisticsService = StatisticsService();
+          final matchModel = MatchModel.fromMap(matchDoc.data()!);
+          await statisticsService.updateStatisticsAfterMatch(
+            matchModel,
+            winnerPlayerIds,
+          );
+
+          // Show success message
+          _showSnackBar(context, "🎉 $winningTeamName won the match!");
+
+          // Redirect after a brief delay
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PastMatchScoreCard(matchId: matchId),
+                ),
+              );
+            }
+          });
+        } catch (e) {
+          print("Error finalizing match: $e");
+          _showSnackBar(
+            context,
+            "Error finalizing match: ${e.toString().split('\n')[0]}",
+          );
+        }
       }
     }
 
@@ -145,7 +198,7 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.9),
+                    color: Colors.red.withAlpha(230),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -175,5 +228,28 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
     Future.delayed(const Duration(seconds: 2), () {
       deuceOverlay.remove();
     });
+  }
+
+  Future<List<String>> _fetchTeamPlayerIds(String matchId, bool isTeam1) async {
+    try {
+      final matchDoc =
+          await FirebaseFirestore.instance
+              .collection("matches")
+              .doc(matchId)
+              .get();
+
+      if (matchDoc.exists) {
+        final matchData = matchDoc.data()!;
+        final List<dynamic> players =
+            isTeam1 ? matchData['team1Players'] : matchData['team2Players'];
+
+        // Properly cast the dynamic list to List<String>
+        return players.map((p) => p.toString()).toList();
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching team players: $e");
+      return []; // Return empty list on error
+    }
   }
 }

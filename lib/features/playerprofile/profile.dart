@@ -6,7 +6,8 @@ import 'package:sportzy/features/auth/screen/forgot_password_page.dart';
 import 'package:flutter/services.dart';
 import 'package:sportzy/features/auth/screen/sign_in_page.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
-import 'package:sportzy/features/playerprofile/edit_profile.dart'; // Make sure this exists
+import 'package:sportzy/features/playerprofile/edit_profile.dart';
+import 'package:sportzy/features/playerprofile/statistics_screen.dart'; // Make sure this exists
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -227,7 +228,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ForgotPasswordPage(),
+                      builder:
+                          (_) => StatisticsScreen(
+                            userId: userId,
+                          ), // Using current user's stats
                     ),
                   ),
                 ),
