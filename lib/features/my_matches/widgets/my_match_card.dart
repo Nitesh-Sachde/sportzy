@@ -48,7 +48,7 @@ class MatchCard extends ConsumerWidget {
           boxShadow: const [
             BoxShadow(
               color: AppColors.black,
-              offset: Offset(1, 1),
+              offset: Offset(2, 2),
               blurRadius: 3,
             ),
           ],

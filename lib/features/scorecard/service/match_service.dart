@@ -23,4 +23,16 @@ class MatchService {
       'status': 'completed',
     });
   }
+
+  static Future<void> deleteMatch(String matchId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(matchId)
+          .delete();
+      return;
+    } catch (e) {
+      throw Exception('Failed to delete match: $e');
+    }
+  }
 }

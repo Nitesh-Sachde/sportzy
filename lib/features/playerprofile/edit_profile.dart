@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -333,18 +334,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     children: [
                       Icon(Icons.email, color: Colors.grey),
                       SizedBox(width: screenWidth * 0.02),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Email",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AutoSizeText(
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              "Email",
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.042,
+                                color: Colors.grey[700],
+                              ),
                             ),
-                          ),
-                          Text(_userEmail, style: TextStyle(fontSize: 16)),
-                        ],
+                            AutoSizeText(
+                              _userEmail,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

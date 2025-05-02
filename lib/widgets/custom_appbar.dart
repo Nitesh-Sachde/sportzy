@@ -17,7 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showDelete = false,
     this.showShare = false,
     this.onBack,
-    this.onDelete,
+    this.onDelete, // Add this line
     this.onShare,
     super.key,
   });
@@ -51,8 +51,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         if (showDelete)
           IconButton(
-            icon: Icon(Icons.delete, color: AppColors.red, size: iconSize),
-            color: AppColors.red,
+            icon: Icon(Icons.delete_outline, color: Colors.red),
             onPressed: onDelete,
           ),
         if (showShare)

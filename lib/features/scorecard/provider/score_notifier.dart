@@ -16,9 +16,11 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
   ScoreNotifier({required this.matchId}) : super([[]]);
   int _currentSetIndex = 0;
   bool _matchCompleted = false;
+  bool _inDeuce = false;
 
   int get currentSetIndex => _currentSetIndex;
   bool get matchCompleted => _matchCompleted;
+  bool get inDeuce => _inDeuce;
 
   void increaseScore(
     int teamIndex,
@@ -34,6 +36,17 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
     final team1 = updatedState[_currentSetIndex][0];
     final team2 = updatedState[_currentSetIndex][1];
 
+    // Check for deuce situation
+    if (team1 >= maxPoints - 1 &&
+        team2 >= maxPoints - 1 &&
+        (team1 - team2).abs() < 2) {
+      _inDeuce = true;
+      _showDeuceToast(context);
+    } else {
+      _inDeuce = false;
+    }
+
+    // Check for set win
     if ((team1 >= maxPoints || team2 >= maxPoints) &&
         (team1 - team2).abs() >= 2) {
       final winner = team1 > team2 ? 0 : 1;
@@ -42,6 +55,7 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
         "Set ${_currentSetIndex + 1} won by Team ${winner + 1}",
       );
 
+      _inDeuce = false; // Reset deuce state
       _currentSetIndex++;
 
       int team1Wins = 0;
@@ -112,5 +126,54 @@ class ScoreNotifier extends StateNotifier<List<List<int>>> {
         backgroundColor: Colors.black87,
       ),
     );
+  }
+
+  void _showDeuceToast(BuildContext context) {
+    // Create a deuce overlay notification
+    final overlay = Overlay.of(context);
+    final deuceOverlay = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).size.height * 0.15,
+            width: MediaQuery.of(context).size.width,
+            child: Material(
+              color: Colors.transparent,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    "DEUCE!",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+    );
+
+    overlay.insert(deuceOverlay);
+
+    // Remove the overlay after a delay
+    Future.delayed(const Duration(seconds: 2), () {
+      deuceOverlay.remove();
+    });
   }
 }

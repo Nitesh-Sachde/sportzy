@@ -43,13 +43,8 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
   void toggleSelect(Player player) {
     if (!mounted) return;
     setState(() {
-      if (selectedPlayers.contains(player)) {
-        selectedPlayers.remove(player);
-      } else {
-        if (!widget.isDoubles || selectedPlayers.length < 2) {
-          selectedPlayers.add(player);
-        }
-      }
+      selectedPlayers.clear(); // Ensure only one player is selected
+      selectedPlayers.add(player);
     });
   }
 
@@ -66,22 +61,41 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
     final height = ScreenSize.screenHeight(context);
     final width = ScreenSize.screenWidth(context);
 
-    final listHeight = height * 0.3;
     final tilePadding = height * 0.012;
     final borderRadius = height * 0.02;
 
-    return AlertDialog(
-      title: Text('Search Player'),
-      content: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: height * 0.65),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Dialog(
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: width * 0.05,
+          vertical: height * 0.02,
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight:
+                MediaQuery.of(context).viewInsets.bottom > 0
+                    ? height *
+                        0.7 // More height when keyboard is open
+                    : height * 0.6,
+          ),
+          padding: EdgeInsets.all(width * 0.04),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'Search Player',
+                style: TextStyle(
+                  fontSize: height * 0.024,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: height * 0.02),
+
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Enter name or ID',
-
                   prefixIcon: const Icon(Icons.search),
                   contentPadding: EdgeInsets.symmetric(
                     vertical: height * 0.018,
@@ -93,7 +107,9 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
                 ),
                 onChanged: (val) => setState(() => query = val.trim()),
               ),
+
               SizedBox(height: height * 0.015),
+
               SizedBox(
                 width: width,
                 height: height * 0.06,
@@ -102,16 +118,25 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
                   child: const Text('Search'),
                 ),
               ),
+
               SizedBox(height: height * 0.015),
+
               if (hasSearched)
                 searchResults.isEmpty
-                    ? Text(
-                      'No results found',
-                      style: TextStyle(fontSize: height * 0.018),
+                    ? Padding(
+                      padding: EdgeInsets.symmetric(vertical: height * 0.02),
+                      child: Center(
+                        child: Text(
+                          'No results found',
+                          style: TextStyle(fontSize: height * 0.018),
+                        ),
+                      ),
                     )
-                    : Flexible(
+                    : Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
+                        physics:
+                            const AlwaysScrollableScrollPhysics(), // Ensures scrolling works in all cases
                         itemCount: searchResults.length,
                         itemBuilder: (_, index) {
                           final player = searchResults[index];
@@ -172,16 +197,26 @@ class _AddPlayerDialogState extends ConsumerState<AddPlayerDialog> {
                         },
                       ),
                     ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  SizedBox(width: width * 0.02),
+                  TextButton(
+                    onPressed:
+                        selectedPlayers.isEmpty ? null : confirmSelection,
+                    child: const Text('Add Player'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: selectedPlayers.isEmpty ? null : confirmSelection,
-          child: const Text('Add Player'),
-        ),
-      ],
     );
   }
 }

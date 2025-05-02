@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -56,6 +57,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
         showDelete: true,
         showShare: true,
         isBackButtonVisible: true,
+        onDelete: () => _showDeleteConfirmationDialog(),
         onShare: () async {
           final shortLink = await DynamicLinkService.createMatchDynamicLink(
             widget.matchId,
@@ -136,6 +138,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                               child: _buildScoreBox(
                                 "${scores[currentSetIndex][0]}",
                                 screenWidth,
+                                isDeuce: scoreNotifier.inDeuce,
                               ),
                             ),
                             Center(
@@ -177,6 +180,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                               child: _buildScoreBox(
                                 "${scores[currentSetIndex][1]}",
                                 screenWidth,
+                                isDeuce: scoreNotifier.inDeuce,
                               ),
                             ),
                           ],
@@ -189,6 +193,38 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                             _buildScoreBox("0", screenWidth),
                           ],
                         ),
+                    if (scoreNotifier.inDeuce) ...[
+                      SizedBox(height: screenHeight * 0.01),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.05,
+                          vertical: screenHeight * 0.01,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.priority_high,
+                              color: Colors.white,
+                              size: screenWidth * 0.06,
+                            ),
+                            SizedBox(width: screenWidth * 0.02),
+                            Text(
+                              "DEUCE - Win by 2 points",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.04,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -267,7 +303,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
         boxShadow: const [
           BoxShadow(
             color: AppColors.black,
-            offset: Offset(1, 1),
+            offset: Offset(2, 2),
             blurRadius: 3,
           ),
         ],
@@ -494,18 +530,18 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
     );
   }
 
-  Widget _buildScoreBox(String score, double width) {
-    debugPrint(score);
-    return Container(
+  Widget _buildScoreBox(String score, double width, {bool isDeuce = false}) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 500),
       width: width * 0.28,
       height: width * 0.3,
       decoration: BoxDecoration(
-        color: AppColors.yelllow,
+        color: isDeuce ? Colors.amber.withOpacity(0.8) : AppColors.yelllow,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          const BoxShadow(
-            color: AppColors.black,
-            blurRadius: 4,
+          BoxShadow(
+            color: isDeuce ? Colors.red.withOpacity(0.6) : AppColors.black,
+            blurRadius: isDeuce ? 8 : 4,
             offset: Offset(2, 2),
           ),
         ],
@@ -513,7 +549,11 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
       alignment: Alignment.center,
       child: Text(
         score,
-        style: TextStyle(fontSize: width * 0.15, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontSize: width * 0.15,
+          fontWeight: FontWeight.bold,
+          color: isDeuce ? Colors.red : Colors.black,
+        ),
       ),
     );
   }
@@ -604,18 +644,114 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
   Widget _setScoreBox(String score, double width, double height) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: width * 0.03,
-        vertical: height * 0.01,
+        horizontal: width * 0.02,
+        vertical: height * 0.008,
       ),
-      height: height * 0.045,
-      width: width * 0.1,
+      height: height * 0.05,
+      width: width * 0.12, // Increased width to fit two digits
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 2,
+            offset: Offset(2, 2),
+          ),
+        ],
       ),
       child: Center(
-        child: Text(score, style: const TextStyle(color: Colors.white)),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            score,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: width * 0.045,
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Delete Match'),
+            content: Text(
+              'Are you sure you want to delete this match? This action cannot be undone.',
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey[800]),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  _deleteMatch();
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _deleteMatch() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+      );
+
+      // Delete the match from Firestore
+      await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(widget.matchId)
+          .delete();
+
+      // Close loading indicator
+      Navigator.of(context).pop();
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Match deleted successfully'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Navigate back to previous screen
+      Navigator.of(context).pop();
+    } catch (e) {
+      // Close loading indicator
+      Navigator.of(context).pop();
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete match: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

@@ -134,8 +134,8 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
                         screenHeight,
                         screenWidth,
                         currentSet,
-
-                        match.scores.sublist(0, match.currentSetIndex),
+                        match.scores,
+                        match, // Pass the match object
                       ),
 
                     SizedBox(height: screenHeight * 0.02),
@@ -169,7 +169,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
         boxShadow: const [
           BoxShadow(
             color: AppColors.black,
-            offset: Offset(1, 1),
+            offset: Offset(2, 2),
             blurRadius: 3,
           ),
         ],
@@ -462,7 +462,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
         boxShadow: const [
           BoxShadow(
             color: AppColors.black,
-            blurRadius: 4,
+            blurRadius: 3,
             offset: Offset(2, 2),
           ),
         ],
@@ -480,10 +480,25 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
     double width,
     int currentSet,
     List<List<int>> scores,
+    MatchModel match, // Add match as parameter
   ) {
     // Safety check to make sure we have scores to display
     if (scores.isEmpty) {
-      return const SizedBox.shrink(); // Return empty widget if no scores
+      return const SizedBox.shrink();
+    }
+
+    // Get all sets that are completed (have a clear winner)
+    final completedSets = <List<int>>[];
+
+    for (var set in scores) {
+      // A set is completed if it has two scores and one is greater than the other
+      if (set.length >= 2 && set[0] != set[1]) {
+        // Check if either team has enough points with 2-point lead (typically game point)
+        if ((set[0] >= match.points || set[1] >= match.points) &&
+            (set[0] - set[1]).abs() >= 2) {
+          completedSets.add(set);
+        }
+      }
     }
 
     return Column(
@@ -494,7 +509,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
             vertical: height * 0.01,
           ),
           child: Text(
-            "COMPLETED SETS",
+            completedSets.isEmpty ? "NO COMPLETED SETS" : "COMPLETED SETS",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: width * 0.05,
@@ -502,15 +517,12 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
             ),
           ),
         ),
-        ...List.generate(scores.length, (index) {
-          // If this is the current set and it's not completed, don't show it
-          if (index >= scores.length || scores[index].length < 2) {
-            return const SizedBox.shrink(); // Skip if out of bounds
-          }
+        ...List.generate(completedSets.length, (index) {
+          final set = completedSets[index];
 
           // Determine which team won the set for coloring
-          final team1WonSet = scores[index][0] > scores[index][1];
-          final team2WonSet = scores[index][1] > scores[index][0];
+          final team1WonSet = set[0] > set[1];
+          final team2WonSet = set[1] > set[0];
 
           return Padding(
             padding: EdgeInsets.symmetric(
@@ -530,12 +542,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _setScoreBox(
-                    "${scores[index][0]}",
-                    width,
-                    height,
-                    team1WonSet,
-                  ),
+                  _setScoreBox("${set[0]}", width, height, team1WonSet),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: width * 0.03,
@@ -557,12 +564,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
                       ),
                     ),
                   ),
-                  _setScoreBox(
-                    "${scores[index][1]}",
-                    width,
-                    height,
-                    team2WonSet,
-                  ),
+                  _setScoreBox("${set[1]}", width, height, team2WonSet),
                 ],
               ),
             ),
