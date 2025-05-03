@@ -15,7 +15,6 @@ import 'package:sportzy/features/home/screen/live_match_scorecard.dart';
 import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
 import 'package:sportzy/router/routes.dart';
 import 'package:sportzy/firebase_options.dart';
-import 'package:sportzy/core/utils/dynamic_link_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
