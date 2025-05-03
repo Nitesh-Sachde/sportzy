@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sportzy/features/home/provider/match_data_provider.dart';
 import 'package:sportzy/features/home/screen/home_page.dart';
 import 'package:sportzy/features/auth/screen/sign_up_page.dart';
 import 'dart:math';
 
 import 'package:sportzy/features/auth/screen/verification_link_sent_page.dart';
+import 'package:sportzy/features/playerprofile/provider/statistics_provider.dart';
 
 String generateRandomUserId() {
   final random = Random();
@@ -153,4 +156,18 @@ List<String> generateSearchKeywords(String name, String id) {
   }
 
   return keywords.toSet().toList();
+}
+
+Future<void> signOut(WidgetRef ref) async {
+  try {
+    // First invalidate all providers that depend on authentication
+    ref.invalidate(liveMatchesProvider);
+    ref.invalidate(pastMatchesProvider);
+    ref.invalidate(userStatisticsProvider);
+
+    // Then sign out
+    await _auth.signOut();
+  } catch (e) {
+    throw Exception('Failed to sign out');
+  }
 }

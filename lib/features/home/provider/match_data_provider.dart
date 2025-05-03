@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
+import 'package:sportzy/features/auth/provider/auth_state_provider.dart';
 
 // Provider for a specific match by ID
 final matchProvider = StreamProvider.family<MatchModel, String>((ref, matchId) {
@@ -19,12 +20,20 @@ final matchProvider = StreamProvider.family<MatchModel, String>((ref, matchId) {
 });
 
 // Provider for live matches
-final liveMatchesProvider = StreamProvider<List<MatchModel>>((ref) {
+final liveMatchesProvider = StreamProvider.autoDispose<List<MatchModel>>((ref) {
+  // Listen to authentication state
+  final isAuthenticated = ref.watch(isUserAuthenticatedProvider);
+
+  // Return empty stream if not authenticated
+  if (!isAuthenticated) {
+    return Stream.value([]);
+  }
+
   return FirebaseFirestore.instance
       .collection('matches')
       .where('status', isEqualTo: 'live')
       .orderBy('createdAt', descending: true)
-      .limit(10) // Limit to prevent excessive data fetching
+      .limit(10)
       .snapshots()
       .map(
         (snapshot) =>
@@ -33,7 +42,15 @@ final liveMatchesProvider = StreamProvider<List<MatchModel>>((ref) {
 });
 
 // Provider for past matches
-final pastMatchesProvider = StreamProvider<List<MatchModel>>((ref) {
+final pastMatchesProvider = StreamProvider.autoDispose<List<MatchModel>>((ref) {
+  // Listen to authentication state
+  final isAuthenticated = ref.watch(isUserAuthenticatedProvider);
+
+  // Return empty stream if not authenticated
+  if (!isAuthenticated) {
+    return Stream.value([]);
+  }
+
   return FirebaseFirestore.instance
       .collection('matches')
       .where('status', isEqualTo: 'completed')

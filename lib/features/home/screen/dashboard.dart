@@ -21,6 +21,12 @@ class _DashboardState extends ConsumerState<Dashboard> {
   void initState() {
     super.initState();
     _loadUserDetails();
+
+    // Refresh the providers whenever the screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.refresh(liveMatchesProvider);
+      ref.refresh(pastMatchesProvider);
+    });
   }
 
   Future<void> _loadUserDetails() async {
@@ -149,14 +155,14 @@ class _DashboardState extends ConsumerState<Dashboard> {
           height: screenHeight * 0.35,
           child:
               title == "Live Matches"
-                  ? _buildLiveMatches(screenWidth)
-                  : _buildPastMatches(screenWidth),
+                  ? _buildLiveMatches(screenWidth, screenHeight)
+                  : _buildPastMatches(screenWidth, screenHeight),
         ),
       ],
     );
   }
 
-  Widget _buildLiveMatches(double screenWidth) {
+  Widget _buildLiveMatches(double screenWidth, double screenHeight) {
     final liveMatchesAsync = ref.watch(liveMatchesProvider);
 
     return liveMatchesAsync.when(
@@ -172,11 +178,35 @@ class _DashboardState extends ConsumerState<Dashboard> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Error loading matches')),
+      error:
+          (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const SizedBox(height: 8),
+                Text(
+                  'Could not load matches',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenHeight * 0.018,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                ElevatedButton(
+                  onPressed: () {
+                    // Force refresh the providers
+                    ref.refresh(liveMatchesProvider);
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
     );
   }
 
-  Widget _buildPastMatches(double screenWidth) {
+  Widget _buildPastMatches(double screenWidth, double screenHeight) {
     final pastMatchesAsync = ref.watch(pastMatchesProvider);
 
     return pastMatchesAsync.when(
@@ -192,7 +222,31 @@ class _DashboardState extends ConsumerState<Dashboard> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Error loading matches')),
+      error:
+          (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const SizedBox(height: 8),
+                Text(
+                  'Could not load matches',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenHeight * 0.018,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                ElevatedButton(
+                  onPressed: () {
+                    // Force refresh the providers
+                    ref.refresh(pastMatchesProvider);
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
     );
   }
 }

@@ -23,16 +23,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData? data) {
-    final deepLink = data?.link;
-    if (deepLink != null) {
-      // parse matchId and navigate
-    }
-  });
-  final PendingDynamicLinkData? initialLink =
-      await FirebaseDynamicLinks.instance.getInitialLink();
 
-  final Uri? deepLink = initialLink?.link;
+  // Remove duplicate code - we'll handle this in the app state
+  // FirebaseDynamicLinks.instance.onLink.listen...
+  // final PendingDynamicLinkData?...
+
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   // Request permission
@@ -55,30 +50,62 @@ class _SportzyAppState extends ConsumerState<SportzyApp> {
   @override
   void initState() {
     super.initState();
-    _initDynamicLinks();
+
+    // Initialize dynamic links once the context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initDynamicLinks();
+    });
   }
 
   void _initDynamicLinks() async {
-    await DynamicLinkService.handleDynamicLinks((matchId) async {
-      final doc =
-          await FirebaseFirestore.instance
-              .collection('matches')
-              .doc(matchId)
-              .get();
+    // Handle initial link (app opened from link while app was closed)
+    final PendingDynamicLinkData? initialLink =
+        await FirebaseDynamicLinks.instance.getInitialLink();
 
-      if (!doc.exists) {
-        // Optionally show an error or snackbar
-        return;
+    if (initialLink != null) {
+      _handleDynamicLink(initialLink);
+    }
+
+    // Handle links when app is in foreground
+    FirebaseDynamicLinks.instance.onLink
+        .listen((dynamicLinkData) {
+          _handleDynamicLink(dynamicLinkData);
+        })
+        .onError((error) {
+          print('Dynamic link error: $error');
+        });
+  }
+
+  void _handleDynamicLink(PendingDynamicLinkData data) async {
+    final Uri deepLink = data.link;
+    if (deepLink.queryParameters.containsKey('matchId')) {
+      final matchId = deepLink.queryParameters['matchId']!;
+
+      try {
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('matches')
+                .doc(matchId)
+                .get();
+
+        if (!doc.exists) {
+          print('Match not found: $matchId');
+          return;
+        }
+
+        final data = doc.data();
+        // Check for 'status' not 'matchStatus'
+        final isLive = data?['status'] == 'live';
+
+        // Navigate to appropriate screen
+        navigatorKey.currentState?.pushNamed(
+          isLive ? Routes.liveMatchScoreCard : Routes.pastMatchScoreCard,
+          arguments: matchId,
+        );
+      } catch (e) {
+        print('Error handling dynamic link: $e');
       }
-
-      final data = doc.data();
-      final isLive = data?['matchStatus'] == 'live';
-
-      navigatorKey.currentState?.pushNamed(
-        isLive ? Routes.liveMatchScoreCard : Routes.pastMatchScoreCard,
-        arguments: matchId,
-      );
-    });
+    }
   }
 
   @override
@@ -88,7 +115,7 @@ class _SportzyAppState extends ConsumerState<SportzyApp> {
       debugShowCheckedModeBanner: false,
       title: "Sportzy",
       theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
-      home: const AuthWrapper(), // This will handle the authentication check
+      home: const AuthWrapper(),
       routes: {
         Routes.home: (context) => const HomePage(),
         Routes.signIn: (context) => const SignInPage(),
@@ -112,20 +139,16 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Stream to listen to auth state changes
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // You can show a loading indicator if needed
           return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasData) {
-          // User is logged in, show the HomePage
           return const HomePage();
         } else {
-          // User is not logged in, show the SignInPage
           return const SignInPage();
         }
       },

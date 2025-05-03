@@ -208,7 +208,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
                 // Overall Statistics
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildStatCard(
                       context,

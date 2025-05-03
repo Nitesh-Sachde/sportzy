@@ -69,58 +69,86 @@ class MatchModel {
   }
 
   factory MatchModel.fromMap(Map<String, dynamic> map) {
-    final Map<String, dynamic> scoresMap = Map<String, dynamic>.from(
-      map['scoresMap'] ?? {},
-    );
+    try {
+      final Map<String, dynamic> scoresMap = Map<String, dynamic>.from(
+        map['scoresMap'] ?? {},
+      );
 
-    List<List<int>> scoresList = [];
+      List<List<int>> scoresList = [];
 
-    // Handle empty scores case
-    if (scoresMap.isEmpty) {
-      // Initialize with default scores based on sets
-      final sets = map['sets'] ?? 3;
-      scoresList = List.generate(sets, (_) => [0, 0]);
-    } else {
-      // Convert map to ordered list of sets
-      final sortedKeys =
-          scoresMap.keys.toList()..sort(
-            (a, b) => int.parse(
-              a.split('_')[1],
-            ).compareTo(int.parse(b.split('_')[1])),
-          );
+      // Handle empty scores case
+      if (scoresMap.isEmpty) {
+        // Initialize with default scores based on sets
+        final sets = map['sets'] ?? 3;
+        scoresList = List.generate(sets, (_) => [0, 0]);
+      } else {
+        // Convert map to ordered list of sets
+        final sortedKeys =
+            scoresMap.keys.toList()..sort(
+              (a, b) => int.parse(
+                a.split('_')[1],
+              ).compareTo(int.parse(b.split('_')[1])),
+            );
 
-      for (final key in sortedKeys) {
-        final value = scoresMap[key];
-        if (value is List && value.length == 2) {
-          scoresList.add([value[0] as int, value[1] as int]);
+        for (final key in sortedKeys) {
+          final value = scoresMap[key];
+          if (value is List && value.length == 2) {
+            scoresList.add([value[0] as int, value[1] as int]);
+          }
         }
       }
-    }
 
-    // Always ensure we have at least one set
-    if (scoresList.isEmpty) {
-      scoresList.add([0, 0]);
-    }
+      // Always ensure we have at least one set
+      if (scoresList.isEmpty) {
+        scoresList.add([0, 0]);
+      }
 
-    return MatchModel(
-      matchId: map['matchId'] ?? '',
-      sport: map['sport'] ?? '',
-      mode: map['mode'] ?? '',
-      sets: map['sets'] ?? 3,
-      points: map['points'] ?? 21,
-      team1Name: map['team1Name'] ?? '',
-      team2Name: map['team2Name'] ?? '',
-      team1Players: List<String>.from(map['team1Players'] ?? []),
-      team1PlayerName: List<String>.from(map['team1PlayerName'] ?? []),
-      team2Players: List<String>.from(map['team2Players'] ?? []),
-      team2PlayerName: List<String>.from(map['team2PlayerName'] ?? []),
-      location: map['location'] ?? '',
-      status: map['status'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      createdBy: (map['createdby'] ?? ''),
-      keywords: List<String>.from(map['keywords'] ?? []),
-      scores: scoresList,
-      currentSetIndex: map['currentSetIndex'] ?? 0,
-    );
+      // Use null-aware access and default values for everything
+      return MatchModel(
+        matchId: map['matchId'] ?? '',
+        sport: map['sport'] ?? '',
+        mode: map['mode'] ?? '',
+        sets: map['sets'] ?? 3,
+        points: map['points'] ?? 21,
+        team1Name: map['team1Name'] ?? '',
+        team2Name: map['team2Name'] ?? '',
+        team1Players: List<String>.from(map['team1Players'] ?? []),
+        team1PlayerName: List<String>.from(map['team1PlayerName'] ?? []),
+        team2Players: List<String>.from(map['team2Players'] ?? []),
+        team2PlayerName: List<String>.from(map['team2PlayerName'] ?? []),
+        location: map['location'] ?? '',
+        status: map['status'] ?? '',
+        createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdBy: (map['createdBy'] ?? ''),
+        keywords: List<String>.from(map['keywords'] ?? []),
+        scores: scoresList,
+        currentSetIndex: map['currentSetIndex'] ?? 0,
+      );
+    } catch (e) {
+      print('Error parsing match data: $e');
+      // Return a "fallback" model in case of error
+      return MatchModel(
+        matchId: map['matchId'] ?? 'error',
+        sport: 'Unknown',
+        mode: 'singles',
+        sets: 3,
+        points: 21,
+        team1Name: 'Team 1',
+        team2Name: 'Team 2',
+        team1Players: [],
+        team1PlayerName: [],
+        team2Players: [],
+        team2PlayerName: [],
+        location: 'Unknown',
+        status: 'unknown',
+        createdAt: DateTime.now(),
+        createdBy: '',
+        keywords: [],
+        scores: [
+          [0, 0],
+        ],
+        currentSetIndex: 0,
+      );
+    }
   }
 }
