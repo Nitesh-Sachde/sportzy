@@ -65,7 +65,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             GButton(
               icon: Icons.settings,
-              text: 'Profile',
+              text: 'Settings',
               textSize: screenWidth * 0.07,
               iconSize: screenWidth * 0.09,
             ),

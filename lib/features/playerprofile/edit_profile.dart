@@ -15,7 +15,7 @@ class ProfileEditScreen extends ConsumerStatefulWidget {
 
 class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
-
+  String _userName = '';
   // Form controllers
   final _fullNameController = TextEditingController();
   final _ageController = TextEditingController();
@@ -77,6 +77,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           final data = userData.data();
           if (data != null) {
             setState(() {
+              _userName = data['name'] ?? '';
               _fullNameController.text = data['fullname'] ?? '';
               _phoneController.text = data['phone'] ?? '';
               _ageController.text = data['age']?.toString() ?? '';
@@ -272,23 +273,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       CircleAvatar(
                         radius: screenWidth * 0.15,
                         backgroundColor: AppColors.primary.withOpacity(0.2),
-                        backgroundImage: const AssetImage(
-                          'assets/images/avatar.png',
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
+                        child: Text(
+                          getInitials(_userName),
+                          style: TextStyle(
                             color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: EdgeInsets.all(screenWidth * 0.02),
-                          child: Icon(
-                            Icons.camera_alt,
-                            color: AppColors.white,
-                            size: screenWidth * 0.05,
+                            fontSize: screenWidth * 0.17,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -667,4 +657,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           }).toList(),
     );
   }
+}
+
+String getInitials(String? name) {
+  if (name == null || name.trim().isEmpty) return "";
+  final names = name.trim().split(RegExp(r'\s+'));
+  if (names.length > 1) {
+    return "${names[0][0]}${names[1][0]}".toUpperCase();
+  }
+  return names[0][0].toUpperCase();
 }
