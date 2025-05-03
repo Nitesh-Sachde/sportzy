@@ -42,6 +42,49 @@ class MatchModel {
   });
 
   Map<String, dynamic> toMap() {
+    // Generate keywords for searching
+    final List<String> generateKeywords = [];
+
+    // Add ID
+    generateKeywords.add(matchId.toLowerCase());
+
+    // Add team names
+    team1Name.toLowerCase().split(' ').forEach((word) {
+      if (word.isNotEmpty) generateKeywords.add(word);
+    });
+
+    team2Name.toLowerCase().split(' ').forEach((word) {
+      if (word.isNotEmpty) generateKeywords.add(word);
+    });
+
+    // Add player names
+    for (var name in team1PlayerName) {
+      name.toLowerCase().split(' ').forEach((word) {
+        if (word.isNotEmpty) generateKeywords.add(word);
+      });
+    }
+
+    for (var name in team2PlayerName) {
+      name.toLowerCase().split(' ').forEach((word) {
+        if (word.isNotEmpty) generateKeywords.add(word);
+      });
+    }
+
+    // Add location
+    location.toLowerCase().split(' ').forEach((word) {
+      if (word.isNotEmpty) generateKeywords.add(word);
+    });
+
+    // Add sport and mode
+    generateKeywords.add(sport.toLowerCase());
+    generateKeywords.add(mode.toLowerCase());
+
+    // Add status
+    generateKeywords.add(status.toLowerCase());
+
+    // Remove duplicates
+    final keywords = generateKeywords.toSet().toList();
+
     final Map<String, List<int>> scoresMap = {
       for (int i = 0; i < scores.length; i++) 'set_$i': scores[i],
     };

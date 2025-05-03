@@ -7,6 +7,7 @@ import 'package:sportzy/features/auth/screen/sign_in_page.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -32,10 +33,40 @@ class _SignUpPageState extends State<SignUpPage> {
 
     if (_formKey.currentState!.validate()) {
       setState(() {
-        isLoading = true; // Set loading state to true
+        isLoading = true;
       });
-      signUp(context: context, name: name, email: email, password: password);
+
+      signUp(
+        context: context,
+        name: name,
+        email: email,
+        password: password,
+        onError: (error) {
+          _showToast(error, isError: true);
+          setState(() {
+            isLoading = false;
+          });
+        },
+        onSuccess: () {
+          _showToast(
+            "Account created! Please check your email to verify",
+            isError: false,
+          );
+        },
+      );
     }
+  }
+
+  void _showToast(String message, {bool isError = false}) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 2,
+      backgroundColor: isError ? Colors.red : Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   @override

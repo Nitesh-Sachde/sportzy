@@ -17,10 +17,14 @@ String generateRandomUserId() {
   return 'S$number';
 }
 
+// Update the sign in function to handle errors
+
 Future<void> signIn({
   required BuildContext context,
   required String email,
   required String password,
+  Function(String)? onError,
+  Function()? onSuccess,
 }) async {
   try {
     final auth = FirebaseAuth.instance;
@@ -36,45 +40,85 @@ Future<void> signIn({
       // If not verified, send user to verification link page
       await user.sendEmailVerification();
 
+      if (onError != null) {
+        onError("Email not verified. Verification link sent.");
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const VerificationLinkSentPage()),
       );
     } else {
-      Future<void> saveUserFcmToken() async {
-        final user = FirebaseAuth.instance.currentUser;
-        final token = await FirebaseMessaging.instance.getToken();
-
-        if (user != null && token != null) {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .update({'fcmToken': token});
-        }
+      // Update FCM token
+      final token = await FirebaseMessaging.instance.getToken();
+      if (user != null && token != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'fcmToken': token});
       }
 
-      // Verified user → HomePage
+      if (onSuccess != null) {
+        onSuccess();
+      }
+
+      // Navigate to home page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
     }
   } on FirebaseAuthException catch (e) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(e.message ?? 'Sign in failed')));
+    // Add this logging
+
+    String errorMessage;
+
+    // Update the sign in error handling
+    switch (e.code) {
+      case 'user-not-found':
+        errorMessage = 'This email is not registered with us';
+        break;
+      case 'invalid-credential':
+        errorMessage = 'Incorrect credential. Please try again';
+        break;
+
+      case 'user-disabled':
+        errorMessage = 'This account has been disabled';
+        break;
+      case 'too-many-requests':
+        errorMessage = 'Please wait a bit before trying again';
+        break;
+      default:
+        errorMessage = 'Sign in failed. Please try again';
+    }
+
+    if (onError != null) {
+      onError(errorMessage);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
   } catch (e) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Something went wrong')));
+    if (onError != null) {
+      onError('An unexpected error occurred');
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Something went wrong')));
+    }
   }
 }
+
+// Update the sign up function to handle errors
 
 Future<User?> signUp({
   required BuildContext context,
   required String name,
   required String email,
   required String password,
+  Function(String)? onError,
+  Function()? onSuccess,
 }) async {
   try {
     final auth = FirebaseAuth.instance;
@@ -98,38 +142,67 @@ Future<User?> signUp({
       'keywords': generateSearchKeywords(name.trim(), id.trim().toLowerCase()),
       'createdAt': FieldValue.serverTimestamp(),
     });
+
     await userCredential.user!.sendEmailVerification();
+
+    if (onSuccess != null) {
+      onSuccess();
+    }
 
     // Navigate to verification screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const VerificationLinkSentPage()),
     );
-    Future<void> saveUserFcmToken() async {
-      final user = FirebaseAuth.instance.currentUser;
-      final token = await FirebaseMessaging.instance.getToken();
-
-      if (user != null && token != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .update({'fcmToken': token});
-      }
-    }
 
     return user;
   } on FirebaseAuthException catch (e) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(e.message ?? 'Sign up failed')));
+    // Add this logging
+    print('FirebaseAuthException code: ${e.code}');
+    print('FirebaseAuthException message: ${e.message}');
+
+    String errorMessage;
+
+    switch (e.code) {
+      case 'email-already-in-use':
+        errorMessage =
+            'This email is already registered. Try signing in instead';
+        break;
+      case 'invalid-email':
+        errorMessage = 'This email address doesn\'t look right';
+        break;
+      case 'operation-not-allowed':
+        errorMessage = 'Sign up is temporarily unavailable';
+        break;
+      case 'weak-password':
+        errorMessage =
+            'Your password is too easy to guess. Please choose a stronger one';
+        break;
+      default:
+        errorMessage = 'Sign up failed. Please try again';
+    }
+
+    if (onError != null) {
+      onError(errorMessage);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const SignUpPage()),
     );
   } catch (e) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Something went wrong')));
+    if (onError != null) {
+      onError('Something went wrong');
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Something went wrong')));
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const SignUpPage()),

@@ -191,32 +191,36 @@ class LiveMatchCard extends ConsumerWidget {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                child: Text(
-                  "SET ${match.currentSetIndex + 1}",
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: screenWidth * 0.05,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                  child: Text(
+                    "SET ${match.currentSetIndex + 1}",
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.center,
-              child: ScoreBox(
-                score: '${currentScores[1]}',
-                playerName1:
-                    match.team2PlayerName.isNotEmpty
-                        ? match.team2PlayerName[0]
-                        : '',
-                playerName2:
-                    isDoubles && match.team2PlayerName.length > 1
-                        ? match.team2PlayerName[1]
-                        : null,
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: ScoreBox(
+                  score: '${currentScores[1]}',
+                  playerName1:
+                      match.team2PlayerName.isNotEmpty
+                          ? match.team2PlayerName[0]
+                          : '',
+                  playerName2:
+                      isDoubles && match.team2PlayerName.length > 1
+                          ? match.team2PlayerName[1]
+                          : null,
+                ),
               ),
             ),
           ],
@@ -364,16 +368,18 @@ class LiveMatchCard extends ConsumerWidget {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                child: Text(
-                  "SET ${match.currentSetIndex + 1}",
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: screenWidth * 0.05,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                  child: Text(
+                    "SET ${match.currentSetIndex + 1}",
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

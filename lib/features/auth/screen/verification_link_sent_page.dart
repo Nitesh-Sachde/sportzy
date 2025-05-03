@@ -5,6 +5,7 @@ import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/home/screen/home_page.dart';
 import 'package:sportzy/router/routes.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class VerificationLinkSentPage extends StatefulWidget {
   const VerificationLinkSentPage({super.key});
@@ -69,19 +70,35 @@ class _VerificationLinkSentPageState extends State<VerificationLinkSentPage> {
     });
   }
 
+  // Update the resend verification email method
+
   Future<void> _resendVerificationEmail() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification link resent!')),
+
+        // Use Toast instead of SnackBar for better visibility
+        Fluttertoast.showToast(
+          msg: 'Verification email sent to your inbox!',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
         );
+
         _startCooldownTimer();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to resend verification link')),
+      // Use Toast for error message too
+      Fluttertoast.showToast(
+        msg: 'Couldn\'t send verification email. Please try again',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
     }
   }

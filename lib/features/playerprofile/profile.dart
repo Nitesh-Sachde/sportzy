@@ -235,16 +235,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                 ),
-                buildProfileOption(
-                  context,
-                  "Notification Preferences",
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ForgotPasswordPage(),
-                    ),
-                  ),
-                ),
+                // buildProfileOption(
+                //   context,
+                //   "Notification Preferences",
+                //   () => Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (_) => const ForgotPasswordPage(),
+                //     ),
+                //   ),
+                // ),
                 buildProfileOption(
                   context,
                   "Delete Account",

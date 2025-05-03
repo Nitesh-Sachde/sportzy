@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/core/utils/validators.dart';
@@ -13,13 +15,61 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController emailController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Add form key
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  void _submit() {
+  void _showToast(String message, {bool isError = false}) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 2,
+      backgroundColor: isError ? Colors.red : Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      //  If email is valid, proceed with password reset
-      print("Reset link sent to: ${emailController.text}");
-      // TODO: Implement password reset functionality
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await FirebaseAuth.instance.sendPasswordResetEmail(
+          email: emailController.text.trim(),
+        );
+
+        // (prevents email enumeration attacks)
+        _showToast(
+          "If your email is registered with us, you'll receive a password reset link shortly",
+        );
+        emailController.clear();
+      } on FirebaseAuthException catch (e) {
+        print('Forgot password error code: ${e.code}');
+
+        // Only show specific error messages for validation issues, not for existence issues
+        if (e.code == 'invalid-email') {
+          _showToast('This email address doesn\'t look right', isError: true);
+        } else if (e.code == 'too-many-requests') {
+          _showToast('Please wait a bit before trying again', isError: true);
+        } else {
+          // For security reasons, don't reveal whether the user exists or not
+          _showToast(
+            "If your email is registered with us, you'll receive a password reset link shortly",
+          );
+        }
+      } catch (e) {
+        print('General exception in forgot password: $e');
+        _showToast('Something went wrong. Please try again', isError: true);
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -71,7 +121,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ],
           ),
           child: Form(
-            //
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -87,7 +136,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ),
                 SizedBox(height: screenWidth * 0.02),
 
-                //  Email Input Field with Validation
+                // Email Input Field with Validation
                 CustomTextField(
                   label: "Email",
                   hintText: "Email",
@@ -95,7 +144,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icons.email,
                   textInputAction: TextInputAction.done,
-                  validator: Validators.validateEmail, // Apply validation
+                  validator: Validators.validateEmail,
                 ),
 
                 SizedBox(height: screenHeight * 0.02),
@@ -109,26 +158,39 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Send Button
+                // Send Button with loading state
                 SizedBox(
                   width: double.infinity,
                   height: screenHeight * 0.06,
                   child: ElevatedButton(
-                    onPressed: _submit, // Trigger validation
+                    onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
-                    ),
-                    child: const Text(
-                      "Send",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      disabledBackgroundColor: AppColors.primary.withOpacity(
+                        0.7,
                       ),
                     ),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.0,
+                              ),
+                            )
+                            : const Text(
+                              "Send",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                   ),
                 ),
               ],

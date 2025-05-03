@@ -9,6 +9,7 @@ import 'package:sportzy/features/auth/screen/sign_up_page.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
   const SignInPage({super.key});
@@ -21,14 +22,45 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   void _submit() {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     if (_formKey.currentState!.validate()) {
-      ref.read(justSignedInProvider.notifier).state = true;
-      signIn(context: context, email: email, password: password);
+      setState(() {
+        _isLoading = true; // Add this loading state variable
+      });
+      {
+        ref.read(justSignedInProvider.notifier).state = true;
+        signIn(
+          context: context,
+          email: email,
+          password: password,
+          onError: (error) {
+            _showToast(error, isError: true);
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onSuccess: () {
+            _showToast("You're now signed in!", isError: false);
+          },
+        );
+      }
     }
+  }
+
+  void _showToast(String message, {bool isError = false}) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 2,
+      backgroundColor: isError ? Colors.red : Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   @override
