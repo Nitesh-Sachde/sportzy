@@ -45,6 +45,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
           },
           onSuccess: () {
             _showToast("You're now signed in!", isError: false);
+            setState(() {
+              _isLoading = false;
+            });
           },
         );
       }
@@ -70,183 +73,193 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     double paddingSize = screenWidth * 0.06;
     double textSize = screenWidth * 0.08;
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: "Sign In",
-        isBackButtonVisible: false,
-        showDelete: false,
-        showShare: false,
-      ),
-      backgroundColor: AppColors.primary,
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: CustomAppBar(
+            title: "Sign In",
+            isBackButtonVisible: false,
+            showDelete: false,
+            showShare: false,
+          ),
+          backgroundColor: AppColors.primary,
 
-      body: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(screenWidth * 0.1),
-          topRight: Radius.circular(screenWidth * 0.1),
-        ),
-        child: Container(
-          height: double.infinity,
-          color: AppColors.background,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: paddingSize),
-            child: SingleChildScrollView(
-              child: Form(
-                // ✅ Wrap in Form
-                key: _formKey, // ✅ Assign form key
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: screenHeight * 0.04),
-                    Text(
-                      "Welcome Back,",
-                      style: TextStyle(
-                        fontSize: textSize,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.005),
-                    Text(
-                      "Sign in to continue",
-                      style: TextStyle(
-                        fontSize: textSize * 0.6,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-
-                    Center(
-                      child: Image.asset(
-                        "assets/images/sportzy_logo.png",
-                        width: screenWidth * 0.7,
-                        height: screenHeight * 0.3,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-
-                    // Email Field
-                    CustomTextField(
-                      label: "Email",
-                      hintText: "Enter your email",
-                      controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: Icons.email,
-                      validator: Validators.validateEmail, // ✅ Validation
-                      textInputAction: TextInputAction.next,
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Password Field
-                    CustomTextField(
-                      label: "Password",
-                      hintText: "Enter your password",
-                      controller: passwordController,
-                      isPassword: true,
-                      prefixIcon: Icons.lock,
-                      validator:
-                          Validators.validateSignInPassword, // ✅ Validation
-                      textInputAction: TextInputAction.done,
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+          body: ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(screenWidth * 0.1),
+              topRight: Radius.circular(screenWidth * 0.1),
+            ),
+            child: Container(
+              height: double.infinity,
+              color: AppColors.background,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingSize),
+                child: SingleChildScrollView(
+                  child: Form(
+                    // ✅ Wrap in Form
+                    key: _formKey, // ✅ Assign form key
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ForgotPasswordPage(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "Forgot Password?",
-                            style: TextStyle(
-                              fontSize: textSize * 0.5,
-                              color: AppColors.lightBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        SizedBox(height: screenHeight * 0.04),
+                        Text(
+                          "Welcome Back,",
+                          style: TextStyle(
+                            fontSize: textSize,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
                         ),
-                      ],
-                    ),
-
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Sign In Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: screenHeight * 0.06,
-                      child: ElevatedButton(
-                        onPressed: _submit, // ✅ Trigger validation
-                        style: ButtonStyle(
-                          backgroundColor:
-                              WidgetStateProperty.resolveWith<Color>((
-                                Set<WidgetState> states,
-                              ) {
-                                return AppColors.primary;
-                              }),
-                          foregroundColor: WidgetStateProperty.all<Color>(
-                            Colors.white,
+                        SizedBox(height: screenHeight * 0.005),
+                        Text(
+                          "Sign in to continue",
+                          style: TextStyle(
+                            fontSize: textSize * 0.6,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textSecondary,
                           ),
-                          shape:
-                              WidgetStateProperty.all<RoundedRectangleBorder>(
+                        ),
+
+                        Center(
+                          child: Image.asset(
+                            "assets/images/sportzy_logo.png",
+                            width: screenWidth * 0.7,
+                            height: screenHeight * 0.3,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+
+                        // Email Field
+                        CustomTextField(
+                          label: "Email",
+                          hintText: "Enter your email",
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: Icons.email,
+                          validator: Validators.validateEmail, // ✅ Validation
+                          textInputAction: TextInputAction.next,
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+
+                        // Password Field
+                        CustomTextField(
+                          label: "Password",
+                          hintText: "Enter your password",
+                          controller: passwordController,
+                          isPassword: true,
+                          prefixIcon: Icons.lock,
+                          validator:
+                              Validators.validateSignInPassword, // ✅ Validation
+                          textInputAction: TextInputAction.done,
+                        ),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPasswordPage(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  fontSize: textSize * 0.5,
+                                  color: AppColors.lightBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: screenHeight * 0.03),
+
+                        // Sign In Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: screenHeight * 0.06,
+                          child: ElevatedButton(
+                            onPressed: _submit, // ✅ Trigger validation
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  WidgetStateProperty.resolveWith<Color>((
+                                    Set<WidgetState> states,
+                                  ) {
+                                    return AppColors.primary;
+                                  }),
+                              foregroundColor: WidgetStateProperty.all<Color>(
+                                Colors.white,
+                              ),
+                              shape: WidgetStateProperty.all<
+                                RoundedRectangleBorder
+                              >(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                               ),
-                        ),
-                        child: Text(
-                          "Sign In",
-                          style: TextStyle(
-                            fontSize: textSize * 0.8,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Sign Up Option
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account?",
-                            style: TextStyle(
-                              fontSize: textSize * 0.5,
-                              color: AppColors.black,
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignUpPage(),
-                                ),
-                              );
-                            },
                             child: Text(
-                              "Sign Up",
+                              "Sign In",
                               style: TextStyle(
-                                fontSize: textSize * 0.6,
-                                color: Colors.blue,
+                                fontSize: textSize * 0.8,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+
+                        // Sign Up Option
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?",
+                                style: TextStyle(
+                                  fontSize: textSize * 0.5,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SignUpPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  "Sign Up",
+                                  style: TextStyle(
+                                    fontSize: textSize * 0.6,
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withAlpha(128), // 50% opacity
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      ],
     );
   }
 }

@@ -89,11 +89,15 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                   List<List<int>>.from(
                     match.scores.map<List<int>>((s) => List<int>.from(s)),
                   ),
+                  maxPoints: match.points,
                 );
               } else {
                 // Initialize with default empty scores for each set
                 final defaultScores = List.generate(match.sets, (_) => [0, 0]);
-                scoreNotifier.loadExistingScores(defaultScores);
+                scoreNotifier.loadExistingScores(
+                  defaultScores,
+                  maxPoints: match.points,
+                );
               }
 
               setState(() {
@@ -214,44 +218,94 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                             _buildScoreBox("0", screenWidth),
                           ],
                         ),
-                    if (scoreNotifier.inDeuce) ...[
-                      SizedBox(height: screenHeight * 0.01),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.05,
-                          vertical: screenHeight * 0.01,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.priority_high,
-                              color: Colors.white,
-                              size: screenWidth * 0.06,
+                    SizedBox(height: screenHeight * 0.01),
+
+                    // Show deuce/advantage label based on state
+                    Builder(
+                      builder: (context) {
+                        final deuceState = ref.watch(
+                          deuceStateProvider(widget.matchId),
+                        );
+                        final advantageTeam = ref.watch(
+                          advantageTeamProvider(widget.matchId),
+                        );
+
+                        if (deuceState == DeuceState.deuce) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
                             ),
-                            SizedBox(width: screenWidth * 0.02),
-                            Text(
-                              "DEUCE - Win by 2 points",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.04,
-                              ),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.priority_high,
+                                  color: Colors.white,
+                                  size: screenWidth * 0.06,
+                                ),
+                                SizedBox(width: screenWidth * 0.02),
+                                Text(
+                                  "DEUCE",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: screenWidth * 0.04,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else if (deuceState == DeuceState.advantage) {
+                          final teamName =
+                              advantageTeam == 0
+                                  ? match.team1Name
+                                  : match.team2Name;
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.01,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.stars,
+                                  color: Colors.white,
+                                  size: screenWidth * 0.06,
+                                ),
+                                SizedBox(width: screenWidth * 0.02),
+                                Text(
+                                  "ADVANTAGE $teamName",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: screenWidth * 0.04,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return SizedBox.shrink(); // No deuce or advantage
+                        }
+                      },
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         GestureDetector(
                           onTap: () {
-                            scoreNotifier.decreaseScore(0);
+                            scoreNotifier.decreaseScore(0, match.points);
                             MatchService.updateMatchScores(
                               matchId: match.matchId,
                               currentSetIndex: currentSetIndex,
@@ -267,7 +321,7 @@ class _ScoreEntryScreenState extends ConsumerState<ScoreEntryScreen> {
                         SizedBox(width: screenWidth * 0.23),
                         GestureDetector(
                           onTap: () {
-                            scoreNotifier.decreaseScore(1);
+                            scoreNotifier.decreaseScore(1, match.points);
                             MatchService.updateMatchScores(
                               matchId: match.matchId,
                               currentSetIndex: currentSetIndex,

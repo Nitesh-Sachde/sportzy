@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -6,9 +7,22 @@ import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/dynamic_link_service.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:sportzy/features/create_match/model/match_model.dart';
+import 'package:sportzy/features/home/screen/past_match_scorecard.dart';
 import 'package:sportzy/features/scorecard/provider/match_provider_to_scorecard.dart';
 import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:intl/intl.dart';
+
+// Add StreamProvider to listen to match changes
+final matchStatusStreamProvider = StreamProvider.family<String, String>((
+  ref,
+  matchId,
+) {
+  return FirebaseFirestore.instance
+      .collection('matches')
+      .doc(matchId)
+      .snapshots()
+      .map((snapshot) => snapshot.data()?['status'] ?? 'live');
+});
 
 class LiveMatchScoreCard extends ConsumerStatefulWidget {
   final String matchId;
@@ -27,6 +41,24 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
     final screenHeight = ScreenSize.screenHeight(context);
     final screenWidth = ScreenSize.screenWidth(context);
     final matchAsync = ref.watch(matchByIdProvider(widget.matchId));
+
+    // Watch for match status changes
+    final matchStatusAsync = ref.watch(
+      matchStatusStreamProvider(widget.matchId),
+    );
+
+    // Check if match is completed, then redirect
+    matchStatusAsync.whenData((status) {
+      if (status == 'completed') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => PastMatchScoreCard(matchId: widget.matchId),
+            ),
+          );
+        });
+      }
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: false,
@@ -124,6 +156,7 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
                       team1CurrentScore,
                       team2CurrentScore,
                       currentSet,
+                      match, // Add match as a parameter
                     ),
 
                     SizedBox(height: screenHeight * 0.02),
@@ -406,13 +439,33 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
     );
   }
 
+  // Update the _buildLiveScoreSection method to include deuce/advantage indicators
   Widget _buildLiveScoreSection(
     double height,
     double width,
     String team1Score,
     String team2Score,
     int currentSet,
+    MatchModel match, // Add match as a parameter
   ) {
+    final team1Points = int.tryParse(team1Score) ?? 0;
+    final team2Points = int.tryParse(team2Score) ?? 0;
+    final maxPoints = match.points; // Get max points from match model
+
+    // Determine deuce/advantage state
+    bool isDeuce = false;
+    bool isAdvantage = false;
+    int? advantageTeam;
+
+    if (team1Points >= maxPoints - 1 && team2Points >= maxPoints - 1) {
+      if (team1Points == team2Points) {
+        isDeuce = true;
+      } else if ((team1Points - team2Points).abs() == 1) {
+        isAdvantage = true;
+        advantageTeam = team1Points > team2Points ? 0 : 1;
+      }
+    }
+
     return Column(
       children: [
         Row(
@@ -447,6 +500,57 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
             _buildScoreBox(team2Score, width),
           ],
         ),
+
+        // Deuce or advantage indicator
+        if (isDeuce || isAdvantage)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            margin: EdgeInsets.only(top: height * 0.02),
+            padding: EdgeInsets.symmetric(
+              horizontal: width * 0.05,
+              vertical: height * 0.015,
+            ),
+            decoration: BoxDecoration(
+              color:
+                  isDeuce
+                      ? Colors.red.shade600.withOpacity(0.8)
+                      : Colors.green.shade600.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      isDeuce
+                          ? Colors.red.shade800.withOpacity(0.4)
+                          : Colors.green.shade800.withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isDeuce ? Icons.priority_high : Icons.stars,
+                  color: Colors.white,
+                  size: width * 0.07,
+                ),
+                SizedBox(width: width * 0.02),
+                Text(
+                  isDeuce
+                      ? "DEUCE"
+                      : "ADVANTAGE ${advantageTeam == 0 ? match.team1Name : match.team2Name}",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.05,
+                    letterSpacing: 0.8,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -475,20 +579,21 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
     );
   }
 
+  // Now update the _buildSetHistory method to check for deuce
   Widget _buildSetHistory(
     double height,
     double width,
     int currentSet,
     List<List<int>> scores,
-    MatchModel match, // Add match as parameter
+    MatchModel match,
   ) {
     // Safety check to make sure we have scores to display
     if (scores.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Get all sets that are completed (have a clear winner)
     final completedSets = <List<int>>[];
+    final hadDeuceList = <bool>[];
 
     for (var set in scores) {
       // A set is completed if it has two scores and one is greater than the other
@@ -497,6 +602,11 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
         if ((set[0] >= match.points || set[1] >= match.points) &&
             (set[0] - set[1]).abs() >= 2) {
           completedSets.add(set);
+
+          // Check if this set had a deuce (both reached maxPoints-1)
+          final hadDeuce =
+              set[0] >= match.points - 1 && set[1] >= match.points - 1;
+          hadDeuceList.add(hadDeuce);
         }
       }
     }
@@ -519,6 +629,8 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
         ),
         ...List.generate(completedSets.length, (index) {
           final set = completedSets[index];
+          final hadDeuce =
+              index < hadDeuceList.length ? hadDeuceList[index] : false;
 
           // Determine which team won the set for coloring
           final team1WonSet = set[0] > set[1];
@@ -542,7 +654,13 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _setScoreBox("${set[0]}", width, height, team1WonSet),
+                  _setScoreBox(
+                    "${set[0]}",
+                    width,
+                    height,
+                    team1WonSet,
+                    hadDeuce: hadDeuce, // Pass the hadDeuce flag
+                  ),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: width * 0.03,
@@ -564,7 +682,13 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
                       ),
                     ),
                   ),
-                  _setScoreBox("${set[1]}", width, height, team2WonSet),
+                  _setScoreBox(
+                    "${set[1]}",
+                    width,
+                    height,
+                    team2WonSet,
+                    hadDeuce: hadDeuce, // Pass the hadDeuce flag
+                  ),
                 ],
               ),
             ),
@@ -574,31 +698,61 @@ class _LiveMatchScoreCardState extends ConsumerState<LiveMatchScoreCard> {
     );
   }
 
+  // Update the _setScoreBox method to include the deuce indicator
   Widget _setScoreBox(
     String score,
     double width,
     double height,
-    bool isWinner,
-  ) {
+    bool isWinner, {
+    bool hadDeuce = false, // Add this parameter
+  }) {
     final Color bgColor =
         isWinner ? Colors.green.shade600 : Colors.red.shade600;
 
-    return Container(
-      height: height * 0.045,
-      width: width * 0.1,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          score,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Container(
+          height: height * 0.045,
+          width: width * 0.1,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              score,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-      ),
+        // Add the deuce indicator
+        if (hadDeuce)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Container(
+              width: width * 0.035,
+              height: width * 0.035,
+              decoration: const BoxDecoration(
+                color: Colors.amber,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text(
+                  'D',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

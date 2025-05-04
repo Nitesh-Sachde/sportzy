@@ -113,7 +113,12 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                     SizedBox(height: screenHeight * 0.01),
 
                     // Show all sets
-                    _buildSetHistory(screenHeight, screenWidth, match.scores),
+                    _buildSetHistory(
+                      screenHeight,
+                      screenWidth,
+                      match.scores,
+                      match.points,
+                    ),
 
                     SizedBox(height: screenHeight * 0.02),
                   ],
@@ -434,10 +439,30 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     );
   }
 
-  Widget _buildSetHistory(double height, double width, List<List<int>> scores) {
+  // Update the _buildSetHistory method to only show played sets
+  Widget _buildSetHistory(
+    double height,
+    double width,
+    List<List<int>> scores,
+    int maxPoints,
+  ) {
     // Safety check to make sure we have scores to display
     if (scores.isEmpty) {
-      return const SizedBox.shrink(); // Return empty widget if no scores
+      return const SizedBox.shrink();
+    }
+
+    // Create a list of valid sets - only include sets that have actually been played
+    final List<List<int>> playedSets = [];
+
+    for (var set in scores) {
+      // Check if set has been played (either team has points or set is complete)
+      if (set.length >= 2 && (set[0] > 0 || set[1] > 0)) {
+        playedSets.add(set);
+      }
+    }
+
+    if (playedSets.isEmpty) {
+      return const SizedBox.shrink(); // No sets played
     }
 
     return Column(
@@ -456,14 +481,19 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
             ),
           ),
         ),
-        ...List.generate(scores.length, (index) {
-          // Safety check to ensure we don't go out of bounds
-          if (index >= scores.length || scores[index].length < 2) {
-            return const SizedBox.shrink(); // Skip if out of bounds
+        ...List.generate(playedSets.length, (index) {
+          // Skip if set has no scores
+          if (index >= playedSets.length || playedSets[index].length < 2) {
+            return const SizedBox.shrink();
           }
 
-          final team1WonSet = scores[index][0] > scores[index][1];
-          final team2WonSet = scores[index][1] > scores[index][0];
+          final team1WonSet = playedSets[index][0] > playedSets[index][1];
+          final team2WonSet = playedSets[index][1] > playedSets[index][0];
+
+          // Check for deuce based on maxPoints
+          final hadDeuce =
+              playedSets[index][0] >= maxPoints - 1 &&
+              playedSets[index][1] >= maxPoints - 1;
 
           return Padding(
             padding: EdgeInsets.symmetric(
@@ -484,10 +514,11 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _setScoreBox(
-                    "${scores[index][0]}",
+                    "${playedSets[index][0]}",
                     width,
                     height,
                     team1WonSet,
+                    hadDeuce: hadDeuce,
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -511,10 +542,11 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
                     ),
                   ),
                   _setScoreBox(
-                    "${scores[index][1]}",
+                    "${playedSets[index][1]}",
                     width,
                     height,
                     team2WonSet,
+                    hadDeuce: hadDeuce,
                   ),
                 ],
               ),
@@ -529,27 +561,56 @@ class _PastMatchScoreCardState extends ConsumerState<PastMatchScoreCard> {
     String score,
     double width,
     double height,
-    bool isWinner,
-  ) {
+    bool isWinner, {
+    bool hadDeuce = false,
+  }) {
     final Color bgColor =
         isWinner ? Colors.green.shade600 : Colors.red.shade600;
 
-    return Container(
-      height: height * 0.045,
-      width: width * 0.1,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          score,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Container(
+          height: height * 0.045,
+          width: width * 0.1,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              score,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-      ),
+        if (hadDeuce)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Container(
+              width: width * 0.035,
+              height: width * 0.035,
+              decoration: BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  "D",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.02,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

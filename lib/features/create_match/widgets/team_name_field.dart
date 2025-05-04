@@ -4,10 +4,13 @@ import 'package:sportzy/core/utils/screen_size.dart';
 class TeamNameField extends StatefulWidget {
   final String hintText;
   final Function(String) onChanged;
+  final String? Function(String?)? validator; // Add validator parameter
+
   const TeamNameField({
     super.key,
     required this.hintText,
     required this.onChanged,
+    this.validator, // Add this parameter
   });
 
   @override
@@ -40,8 +43,10 @@ class _TeamNameFieldState extends State<TeamNameField> {
     return TextFormField(
       controller: _controller,
       focusNode: _focusNode,
+      validator: widget.validator, // Use the validator parameter
       decoration: InputDecoration(
         hintText: widget.hintText,
+        prefixIcon: const Icon(Icons.group),
         contentPadding: EdgeInsets.symmetric(
           vertical: screenHeight * 0.018,
           horizontal: screenWidth * 0.04,

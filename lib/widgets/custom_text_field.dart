@@ -12,6 +12,10 @@ class CustomTextField extends StatefulWidget {
   final bool isEnabled;
   final String? Function(String?)? validator;
   final IconData? prefixIcon;
+  final Widget? suffixIcon; // Added parameter
+  final bool obscureText; // Added parameter
+  final int? maxLines; // Added parameter
+  final Function(String)? onChanged; // Added parameter for password strength
 
   const CustomTextField({
     super.key,
@@ -24,6 +28,10 @@ class CustomTextField extends StatefulWidget {
     this.isEnabled = true,
     this.validator,
     this.prefixIcon,
+    this.suffixIcon, // New parameter
+    this.obscureText = false, // New parameter
+    this.maxLines = 1, // New parameter
+    this.onChanged, // New parameter
   });
 
   @override
@@ -31,12 +39,13 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  bool _obscureText = true;
+  late bool _obscureText;
 
   @override
   void initState() {
     super.initState();
-    _obscureText = widget.isPassword;
+    // Use either the explicit obscureText parameter or fall back to isPassword behavior
+    _obscureText = widget.obscureText || widget.isPassword;
   }
 
   @override
@@ -51,9 +60,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
           controller: widget.controller,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
-          obscureText: widget.isPassword ? _obscureText : false,
+          // Use either the explicit parameter or the internal state
+          obscureText: widget.isPassword ? _obscureText : widget.obscureText,
           enabled: widget.isEnabled,
           validator: widget.validator,
+          maxLines:
+              widget.isPassword
+                  ? 1
+                  : widget.maxLines, // Passwords always single line
+          onChanged: widget.onChanged, // Add onChanged handler
           decoration: InputDecoration(
             hintText: widget.hintText,
             hintStyle: TextStyle(
@@ -66,10 +81,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     ? Icon(widget.prefixIcon, color: AppColors.grey)
                     : null,
             suffixIcon:
-                widget.isPassword
+                // Use the provided suffixIcon if available
+                widget.suffixIcon ??
+                (widget.isPassword
                     ? IconButton(
                       icon: Icon(
                         _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: AppColors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -77,7 +95,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                         });
                       },
                     )
-                    : null,
+                    : null),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(25),
               borderSide: BorderSide(

@@ -106,7 +106,7 @@ class MatchModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'createdBy': createdBy,
       'keywords': keywords,
-      'scoresMap': scoresMap, // 👈 Save as map
+      'scoresMap': scoresMap, // Save as map
       'currentSetIndex': currentSetIndex,
     };
   }

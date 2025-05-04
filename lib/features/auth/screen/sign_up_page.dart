@@ -8,6 +8,8 @@ import 'package:sportzy/widgets/custom_appbar.dart';
 import 'package:sportzy/widgets/custom_text_field.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sportzy/features/auth/screen/terms_and_conditions_screen.dart';
+import 'package:flutter/gestures.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -26,6 +28,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   bool isTermsAccepted = false;
   bool isLoading = false; // Loading state
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
   void _submitForm() {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
@@ -66,6 +71,14 @@ class _SignUpPageState extends State<SignUpPage> {
       backgroundColor: isError ? Colors.red : Colors.green,
       textColor: Colors.white,
       fontSize: 16.0,
+    );
+  }
+
+  // Create a method to navigate to Terms & Conditions
+  void _navigateToTermsAndConditions() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TermsAndConditionsScreen()),
     );
   }
 
@@ -131,15 +144,15 @@ class _SignUpPageState extends State<SignUpPage> {
 
                         // Name Field
                         CustomTextField(
-                          label: "Name",
-                          hintText: "Enter your name",
+                          label: "Full Name",
+                          hintText: "Enter your full name",
                           controller: nameController,
                           keyboardType: TextInputType.name,
-                          prefixIcon: Icons.person,
-                          validator: Validators.validateName,
                           textInputAction: TextInputAction.next,
+                          prefixIcon: Icons.person,
+                          validator: Validators.validateFullName,
                         ),
-                        SizedBox(height: screenHeight * 0.02),
+                        SizedBox(height: 15),
 
                         // Email Field
                         CustomTextField(
@@ -147,34 +160,57 @@ class _SignUpPageState extends State<SignUpPage> {
                           hintText: "Enter your email",
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
                           prefixIcon: Icons.email,
                           validator: Validators.validateEmail,
-                          textInputAction: TextInputAction.next,
                         ),
-                        SizedBox(height: screenHeight * 0.02),
+                        SizedBox(height: 15),
 
                         // Password Field
                         CustomTextField(
                           label: "Password",
                           hintText: "Enter your password",
                           controller: passwordController,
-                          keyboardType: TextInputType.visiblePassword,
-                          isPassword: true,
+                          obscureText: !_isPasswordVisible,
+                          textInputAction: TextInputAction.next,
                           prefixIcon: Icons.lock,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed:
+                                () => setState(
+                                  () =>
+                                      _isPasswordVisible = !_isPasswordVisible,
+                                ),
+                          ),
                           validator: Validators.validatePassword,
-                          textInputAction: TextInputAction.done,
                         ),
-                        SizedBox(height: screenHeight * 0.02),
+                        SizedBox(height: 15),
 
                         // Confirm Password Field
                         CustomTextField(
                           label: "Confirm Password",
-                          hintText: "Re-enter your password",
+                          hintText: "Confirm your password",
                           controller: confirmPasswordController,
-                          isPassword: true,
-                          prefixIcon: Icons.lock,
-                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: !_isConfirmPasswordVisible,
                           textInputAction: TextInputAction.done,
+                          prefixIcon: Icons.lock,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isConfirmPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed:
+                                () => setState(
+                                  () =>
+                                      _isConfirmPasswordVisible =
+                                          !_isConfirmPasswordVisible,
+                                ),
+                          ),
                           validator:
                               (value) => Validators.validateConfirmPassword(
                                 value,
@@ -217,7 +253,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                         color: Colors.blue,
                                         fontWeight: FontWeight.bold,
                                       ),
-                                      // TODO: Navigate to Terms & Conditions page when clicked
+                                      recognizer:
+                                          TapGestureRecognizer()
+                                            ..onTap =
+                                                _navigateToTermsAndConditions,
                                     ),
                                   ],
                                 ),
@@ -320,7 +359,7 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         if (isLoading)
           Container(
-            color: AppColors.white.withOpacity(0.7),
+            color: AppColors.white.withAlpha(179),
             child: Center(
               child: LoadingAnimationWidget.staggeredDotsWave(
                 color: AppColors.primary,

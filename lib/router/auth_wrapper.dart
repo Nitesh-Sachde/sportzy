@@ -27,7 +27,7 @@ class AuthWrapper extends ConsumerWidget {
           return const HomePage(); //  Signed in & verified
         }
 
-        // 🟡 Not verified
+        //  Not verified
         if (justSignedIn) {
           // Reset `justSignedIn` flag after navigation
           WidgetsBinding.instance.addPostFrameCallback((_) {

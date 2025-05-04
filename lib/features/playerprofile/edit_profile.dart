@@ -1,10 +1,11 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sportzy/core/theme/app_colors.dart';
 import 'package:sportzy/core/utils/screen_size.dart';
+import 'package:sportzy/core/utils/validators.dart';
+import 'package:sportzy/widgets/custom_text_field.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({super.key});
@@ -81,7 +82,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               _fullNameController.text = data['fullname'] ?? '';
               _phoneController.text = data['phone'] ?? '';
               _ageController.text = data['age']?.toString() ?? '';
-              selectedGender = data['gender'] ?? 'Male';
+              // Make sure we have a valid gender from the list
+              final loadedGender = data['gender'] as String?;
+              selectedGender =
+                  genders.contains(loadedGender) ? loadedGender : 'Male';
               _cityController.text = data['city'] ?? '';
               _stateController.text = data['state'] ?? '';
               _countryController.text = data['country'] ?? '';
@@ -200,17 +204,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _saveAllChanges() async {
-    // Save all sections that are currently in edit mode
-    if (_editableSections['basic']!) await _saveSection('basic');
-    if (_editableSections['location']!) await _saveSection('location');
-    if (_editableSections['bio']!) await _saveSection('bio');
+    if (_formKey.currentState!.validate()) {
+      // Save all sections that are currently in edit mode
+      if (_editableSections['basic']!) await _saveSection('basic');
+      if (_editableSections['location']!) await _saveSection('location');
+      if (_editableSections['bio']!) await _saveSection('bio');
 
-    // Reset all edit states
-    setState(() {
-      _editableSections.updateAll((key, value) => false);
-    });
+      // Reset all edit states
+      setState(() {
+        _editableSections.updateAll((key, value) => false);
+      });
 
-    Navigator.pop(context);
+      Navigator.pop(context);
+    } else {
+      // Show validation error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fix the validation errors before saving.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -267,12 +281,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Profile Avatar
                 Center(
                   child: Stack(
                     children: [
                       CircleAvatar(
                         radius: screenWidth * 0.15,
-                        backgroundColor: AppColors.primary.withOpacity(0.2),
+                        backgroundColor: AppColors.primary.withAlpha(
+                          51,
+                        ), // Fixed withOpacity
                         child: Text(
                           getInitials(_userName),
                           style: TextStyle(
@@ -287,6 +304,22 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.03),
 
+                // Email Display
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      "Email: $_userEmail",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+
                 // Basic Information Section
                 buildSectionHeader(
                   title: "Basic Information",
@@ -294,150 +327,44 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   canEdit: true,
                 ),
 
-                // Fields are enabled/disabled based on section edit state
+                // Full Name Field with Validation
                 buildTextField(
                   controller: _fullNameController,
                   labelText: "Full Name",
                   hintText: "Enter your full name",
                   prefixIcon: Icons.person,
+                  keyboardType: TextInputType.name,
                   readOnly: !_editableSections['basic']!,
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Please enter your name'
-                              : null,
+                  validator: Validators.validateFullName,
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Display email (read-only)
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.018,
-                    horizontal: screenWidth * 0.04,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade400),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.email, color: Colors.grey),
-                      SizedBox(width: screenWidth * 0.02),
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AutoSizeText(
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              "Email",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.042,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            AutoSizeText(
-                              _userEmail,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.02),
-
+                // Phone Field with Validation
                 buildTextField(
                   controller: _phoneController,
                   labelText: "Phone Number",
-                  hintText: "Enter your phone number",
+                  hintText: "Enter your 10-digit phone number",
                   prefixIcon: Icons.phone,
                   keyboardType: TextInputType.phone,
                   readOnly: !_editableSections['basic']!,
+                  validator: Validators.validatePhone,
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Age and Gender in one row
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: screenWidth * 0.35,
-                        child: buildTextField(
-                          controller: _ageController,
-                          labelText: "Age",
-                          hintText: "Age",
-                          prefixIcon: Icons.calendar_month,
-                          keyboardType: TextInputType.number,
-                          readOnly: !_editableSections['basic']!,
-                          validator: (value) {
-                            if (value != null &&
-                                value.isNotEmpty &&
-                                int.tryParse(value) == null) {
-                              return 'Enter a valid age';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-
-                      SizedBox(
-                        width: screenWidth * 0.45,
-                        child: DropdownButtonFormField<String>(
-                          disabledHint:
-                              selectedGender != null
-                                  ? Text(selectedGender!)
-                                  : Text('Select'),
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: "Gender",
-                            prefixIcon: Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical:
-                                  ScreenSize.screenHeight(context) * 0.018,
-                              horizontal:
-                                  ScreenSize.screenWidth(context) * 0.01,
-                            ),
-                            fillColor:
-                                !_editableSections['basic']!
-                                    ? Colors.grey[100]
-                                    : Colors.white,
-
-                            filled: true,
-                          ),
-                          onChanged:
-                              !_editableSections['basic']!
-                                  ? null
-                                  : (String? newValue) {
-                                    if (newValue != null) {
-                                      setState(() {
-                                        selectedGender = newValue;
-                                      });
-                                    }
-                                  },
-                          items:
-                              genders.map<DropdownMenuItem<String>>((
-                                String value,
-                              ) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
+                // Age Field with Validation
+                buildTextField(
+                  controller: _ageController,
+                  labelText: "Age",
+                  hintText: "Enter your age (5-120)",
+                  prefixIcon: Icons.cake,
+                  keyboardType: TextInputType.number,
+                  readOnly: !_editableSections['basic']!,
+                  validator: Validators.validateAge,
                 ),
+                SizedBox(height: screenHeight * 0.02),
+
+                // Gender Dropdown
+                buildGenderDropdown(readOnly: !_editableSections['basic']!),
                 SizedBox(height: screenHeight * 0.03),
 
                 // Location Information Section
@@ -447,21 +374,25 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   canEdit: true,
                 ),
 
+                // City Field with Validation
                 buildTextField(
                   controller: _cityController,
                   labelText: "City",
                   hintText: "Enter your city",
                   prefixIcon: Icons.location_city,
                   readOnly: !_editableSections['location']!,
+                  validator: Validators.validateCity,
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
+                // State Field with Validation
                 buildTextField(
                   controller: _stateController,
                   labelText: "State",
                   hintText: "Enter your state",
                   prefixIcon: Icons.map,
                   readOnly: !_editableSections['location']!,
+                  validator: Validators.validateState,
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
@@ -471,6 +402,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Country Field with Validation
                       SizedBox(
                         width: screenWidth * 0.41,
                         child: buildTextField(
@@ -479,18 +411,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                           hintText: "Enter country",
                           prefixIcon: Icons.public,
                           readOnly: !_editableSections['location']!,
+                          validator: Validators.validateCountry,
                         ),
                       ),
 
+                      // Pincode Field with Validation
                       SizedBox(
                         width: screenWidth * 0.41,
                         child: buildTextField(
                           controller: _pincodeController,
                           labelText: "Pincode",
-                          hintText: "Pincode",
+                          hintText: "6-digit code",
                           prefixIcon: Icons.pin_drop,
                           keyboardType: TextInputType.number,
                           readOnly: !_editableSections['location']!,
+                          validator: Validators.validatePincode,
                         ),
                       ),
                     ],
@@ -505,25 +440,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   canEdit: true,
                 ),
 
-                TextFormField(
+                // Bio TextField with Validation
+                buildTextField(
                   controller: _bioController,
+                  labelText: "Bio",
+                  hintText: "Tell us about yourself...",
+                  prefixIcon: Icons.description,
                   readOnly: !_editableSections['bio']!,
-                  decoration: InputDecoration(
-                    labelText: 'Bio',
-                    hintText: 'Tell us about yourself...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: screenHeight * 0.02,
-                      horizontal: screenWidth * 0.04,
-                    ),
-                    fillColor:
-                        !_editableSections['bio']!
-                            ? Colors.grey[100]
-                            : Colors.white,
-                    filled: true,
-                  ),
+                  validator: Validators.validateBio,
                   maxLines: 5,
                 ),
                 SizedBox(height: screenHeight * 0.04),
@@ -606,11 +530,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
     bool readOnly = true,
+    int? maxLines = 1,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       readOnly: readOnly,
+      maxLines: maxLines,
+      validator: readOnly ? null : validator, // Only validate when editable
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
@@ -623,36 +550,45 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         // Add different background color for read-only fields
         fillColor: readOnly ? Colors.grey[100] : Colors.white,
         filled: true,
+        errorStyle: TextStyle(
+          color: Colors.red[700],
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      validator: validator,
     );
   }
 
-  // This method is now just used for other dropdown situations, not gender
-  Widget buildDropdownField({
-    required String labelText,
-    required String? value,
-    required List<String> items,
-    required void Function(String?)? onChanged,
-    required IconData prefixIcon,
-    bool readOnly = true,
-  }) {
+  Widget buildGenderDropdown({bool readOnly = true}) {
+    // First ensure selectedGender has a valid value
+    if (selectedGender == null || !genders.contains(selectedGender)) {
+      selectedGender = 'Male'; // Default to Male if invalid value
+    }
+
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(prefixIcon),
+        labelText: "Gender",
+        prefixIcon: Icon(Icons.person_outline),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: EdgeInsets.symmetric(
           vertical: ScreenSize.screenHeight(context) * 0.018,
           horizontal: ScreenSize.screenWidth(context) * 0.01,
         ),
-        fillColor: onChanged == readOnly ? Colors.grey[100] : Colors.white,
+        fillColor: readOnly ? Colors.grey[100] : Colors.white,
         filled: true,
       ),
-      value: value,
-      onChanged: onChanged,
+      value: selectedGender,
+      onChanged:
+          readOnly
+              ? null
+              : (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedGender = newValue;
+                  });
+                }
+              },
       items:
-          items.map<DropdownMenuItem<String>>((String value) {
+          genders.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));
           }).toList(),
     );
